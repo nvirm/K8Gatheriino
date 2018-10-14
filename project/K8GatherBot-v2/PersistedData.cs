@@ -200,6 +200,34 @@ namespace K8GatherBotv2
             }
             return list;
         }
+
+        public bool IsNewKid(string id, int newKidThreshold)
+        {
+            int count = 0;
+            var fkentry = fatKids.Find(x => x.id.Equals( id ));
+            if (fkentry != null)
+            {
+                count += fkentry.count;
+            }
+            var tkentry = thinKids.Find(x => x.id.Equals( id ));
+            if (tkentry != null)
+            {
+                count += tkentry.count;
+            }
+            return count < newKidThreshold;
+        }
+
+        public bool AreAllNewKids(List<string> ids, int newKidThreshold)
+        {
+            foreach (var id in ids)
+            {
+                if (!IsNewKid(id, newKidThreshold))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
     public class UserData : IComparable<UserData>, IEquatable<UserData>

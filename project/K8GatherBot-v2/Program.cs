@@ -44,7 +44,7 @@ namespace K8GatherBotv2
 
             public static string pickturn = ""; //initial "", team1 is cap1id, team2 is cap2id
 
-            //Timer lenght
+            //Timer length
             public static int _counter = 0; //initial value
 
             public static int counterlimit = 0; //maxvalue
@@ -60,6 +60,9 @@ namespace K8GatherBotv2
             public static Dictionary<string, string> locale;
 
             public static Snowflake channelsnowflake = new Snowflake();
+
+            public static int newKidThreshold = 10;
+            public static int giveupThreshold = 100;
 
         }
 
@@ -1097,9 +1100,21 @@ namespace K8GatherBotv2
                     ProgHelpers.readycheckids.Clear();
                     ProgHelpers.readycheck.Clear();
 
+                    bool notAllNewKids = !ProgHelpers.persistedData.AreAllNewKids(ProgHelpers.queueids, ProgHelpers.newKidThreshold);
+                    int retryCount = 0;
+
                     //Random captain 1
                     Random rnd = new Random();
-                    int c1 = rnd.Next(ProgHelpers.queueids.Count);
+                    int c1 = rnd.Next( ProgHelpers.queueids.Count );
+                    if (notAllNewKids)
+                    {
+                        while (ProgHelpers.persistedData.IsNewKid(ProgHelpers.queueids[c1], ProgHelpers.newKidThreshold) &&
+                            retryCount < ProgHelpers.giveupThreshold)
+                        {
+                            c1 = rnd.Next( ProgHelpers.queueids.Count );
+                            retryCount++;
+                        }
+                    }
                     string c1n = "";
                     string c1i = "";
 
@@ -1115,6 +1130,15 @@ namespace K8GatherBotv2
                     //Random captain 2
                     Random rnd2 = new Random();
                     int c2 = rnd2.Next(ProgHelpers.queueids.Count);
+                    if (notAllNewKids)
+                    {
+                        while (ProgHelpers.persistedData.IsNewKid(ProgHelpers.queueids[c2], ProgHelpers.newKidThreshold ) &&
+                            retryCount < ProgHelpers.giveupThreshold)
+                        {
+                            c2 = rnd.Next(ProgHelpers.queueids.Count);
+                            retryCount++;
+                        }
+                    }
                     string c2n = "";
                     string c2i = "";
 
