@@ -61,8 +61,8 @@ namespace K8GatherBotv2
 
             public static Snowflake channelsnowflake = new Snowflake();
 
-            public static int newKidThreshold = 10;
-            public static int giveupThreshold = 100;
+            public static int newKidThreshold = 10;  //2018-10, Threshold of games played until you can become captain, defaults at 10, overridden by appsettings.json.
+            public static int giveupThreshold = 100; //2018-10, Threshold to prevent infinite loop, 100 should be sufficient always.
 
         }
 
@@ -82,6 +82,8 @@ namespace K8GatherBotv2
             Console.WriteLine("qcount:" + Convert.ToInt32(ProgHelpers.Configuration["Settings:Queuesize"]));
             ProgHelpers.counterlimit = Convert.ToInt32(ProgHelpers.Configuration["Settings:Readytimer"]);
             Console.WriteLine("counterlimit:" + Convert.ToInt32(ProgHelpers.Configuration["Settings:Readytimer"]));
+            ProgHelpers.newKidThreshold = Convert.ToInt32(ProgHelpers.Configuration["Settings:CaptainThreshold"]); //2018-10
+            Console.WriteLine("captainthreshold:" + Convert.ToInt32(ProgHelpers.Configuration["Settings:CaptainThreshold"])); //2018-10
             ProgHelpers.language = ProgHelpers.Configuration["Settings:Language"];
             Console.WriteLine("language:" + ProgHelpers.Configuration["Settings:Language"]);
             ProgHelpers.userChannel = ProgHelpers.Configuration["Settings:AllowedChannel"];
@@ -377,14 +379,18 @@ namespace K8GatherBotv2
 
             switch (msgBody)
             {
-                case "!abb": //haHAA!
-                case "! add": //haHAA!
-                case "!dab": //haHAA!
-                case "!sad": //haHAA!
-                case "!abs": //hahaa!
-                case "!bad": //haHAA!
-                case "!ad": //haHAA!
-                case "!mad": //hahaa!
+                case "!abb":    //haHAA!
+                case "!asd":    //haHAA!
+                case "!fap":    //haHAA!
+                case "!ab":     //haHAA!
+                case "!kohta":  //haHAA!
+                case "!dab":    //haHAA!
+                case "!sad":    //haHAA!
+                case "!abs":    //hahaa!
+                case "!bad":    //haHAA!
+                case "!ad":     //haHAA!
+                case "!mad":    //haHAA!
+                case "!grand":  //haHAA!
                 case "!add":
                     await CmdAdd(shard, message);
                     break;
@@ -396,13 +402,13 @@ namespace K8GatherBotv2
                 case "!r":
                     await CmdReady(shard, message);
                     break;
-                case "!wimp":
-                case "!nofuckingway":
-                case "!noob":
-                case "!relinquish":
-                    await http.CreateMessage(message.ChannelId, $"<@!{message.Author.Id}>" + " Äijä hei. Älä viitti. Yritä edes. :-)");
+                //case "!wimp":
+                //case "!nofuckingway":
+                //case "!noob":
+                //case "!relinquish":
+                //    await http.CreateMessage(message.ChannelId, $"<@!{message.Author.Id}>" + " Äijä hei. Älä viitti. Yritä edes. :-)");
                     //await CmdRelinquishCaptainship(shard, message);
-                    break;
+                    //break;
                 case "!pick":
                 case "!p":
                     await CmdPick(shard, message);
@@ -470,7 +476,7 @@ namespace K8GatherBotv2
                 await http.CreateMessage(ProgHelpers.channelsnowflake, new CreateMessageOptions()
                      .SetEmbed(new EmbedOptions()
                      .SetTitle($"kitsun8's GatherBot, " + ProgHelpers.locale["player.stats"] + ": " + idUsername.Item2)
-                              .SetFooter("Discore (.NET Core), C#, " + ProgHelpers.txtversion)
+                              .SetFooter("K8Gatheriino, " + ProgHelpers.txtversion)
                               .SetColor(DiscordColor.FromHexadecimal(0xff9933))
                               .AddField(ProgHelpers.locale["highScores.header"], highScoreStats, true)
                               .AddField(ProgHelpers.locale["captain.header"], captainStats, true)
@@ -493,7 +499,7 @@ namespace K8GatherBotv2
                 await http.CreateMessage(ProgHelpers.channelsnowflake, new CreateMessageOptions()
                     .SetEmbed(new EmbedOptions()
                     .SetTitle($"kitsun8's GatherBot")
-                    .SetFooter("Discore (.NET Core), C# , " + ProgHelpers.txtversion)
+                    .SetFooter("K8Gatheriino, " + ProgHelpers.txtversion)
                     .SetColor(DiscordColor.FromHexadecimal(0xff9933))
                     .AddField(ProgHelpers.locale["info.developer"] + " ", "kitsun8 & pirate_patch", false)
                     .AddField(ProgHelpers.locale["info.purpose"] + " ", ProgHelpers.locale["info.purposeAnswer"], false)
@@ -515,7 +521,7 @@ namespace K8GatherBotv2
             try
             {
                 ResetQueue();
-                await http.CreateMessage(message.ChannelId, $"<@!{message.Author.Id}>" + ProgHelpers.locale["admin.resetSuccessful"]);
+                await http.CreateMessage(message.ChannelId, $"<@!{message.Author.Id}> " + ProgHelpers.locale["admin.resetSuccessful"]);
                 Console.WriteLine("!resetbot" + " --- " + DateTime.Now);
             }
             catch (Exception)
@@ -542,7 +548,7 @@ namespace K8GatherBotv2
                         await http.CreateMessage(ProgHelpers.channelsnowflake, new CreateMessageOptions()
                         .SetEmbed(new EmbedOptions()
                         .SetTitle($"kitsun8's GatherBot, readycheck  " + "(" + ProgHelpers.readycheckids.Count.ToString() + "/" + ProgHelpers.qcount.ToString() + ")")
-                        .SetFooter("Discore (.NET Core), C#, " + ProgHelpers.txtversion)
+                        .SetFooter("K8Gatheriino, " + ProgHelpers.txtversion)
                         .SetColor(DiscordColor.FromHexadecimal(0xff9933))
                         .AddField(ProgHelpers.locale["status.queuePlayers"] + " ", string.Join("\n", notinlist.Cast<string>().ToArray()), false)
                               )
@@ -557,7 +563,7 @@ namespace K8GatherBotv2
                             await http.CreateMessage(ProgHelpers.channelsnowflake, new CreateMessageOptions()
                             .SetEmbed(new EmbedOptions()
                             .SetTitle($"kitsun8's GatherBot, " + ProgHelpers.locale["status.pickedTeams"])
-                            .SetFooter("Discore (.NET Core), C#, " + ProgHelpers.txtversion)
+                            .SetFooter("K8Gatheriino, " + ProgHelpers.txtversion)
                             .SetColor(DiscordColor.FromHexadecimal(0xff9933))
                             .AddField("Team1: ", string.Join("\n", ProgHelpers.team1.Cast<string>().ToArray()), true)
                             .AddField("Team2: ", string.Join("\n", ProgHelpers.team2.Cast<string>().ToArray()), true)
@@ -569,7 +575,7 @@ namespace K8GatherBotv2
                             await http.CreateMessage(ProgHelpers.channelsnowflake, new CreateMessageOptions()
                             .SetEmbed(new EmbedOptions()
                             .SetTitle($"kitsun8's GatherBot, " + ProgHelpers.locale["status.queueStatus"] + " " + "(" + ProgHelpers.queue.Count.ToString() + "/" + ProgHelpers.qcount.ToString() + ")")
-                            .SetFooter("Discore (.NET Core), C#, " + ProgHelpers.txtversion)
+                            .SetFooter("K8Gatheriino, " + ProgHelpers.txtversion)
                             .SetColor(DiscordColor.FromHexadecimal(0xff9933))
                             .AddField(ProgHelpers.locale["status.queueStatus"] + " ", string.Join("\n", ProgHelpers.queue.Cast<string>().ToArray()), false)
                             ));
@@ -597,7 +603,7 @@ namespace K8GatherBotv2
             await http.CreateMessage(ProgHelpers.channelsnowflake, new CreateMessageOptions()
                 .SetEmbed(new EmbedOptions()
                 .SetTitle($"kitsun8's Gatheriino")
-                .SetFooter("Discore (.NET Core), C#, " + ProgHelpers.txtversion)
+                .SetFooter("K8Gatheriino, " + ProgHelpers.txtversion)
                 .SetColor(DiscordColor.FromHexadecimal(0xff9933))
                 .AddField(ProgHelpers.locale[textKey], top10List)));
         }
@@ -700,7 +706,7 @@ namespace K8GatherBotv2
                 await http.CreateMessage(ProgHelpers.channelsnowflake, new CreateMessageOptions()
                     .SetEmbed(new EmbedOptions()
                     .SetTitle($"kitsun8's Gatheriino")
-                    .SetFooter("Discore (.NET Core), C#, " + ProgHelpers.txtversion)
+                    .SetFooter("K8Gatheriino, " + ProgHelpers.txtversion)
                     .SetColor(DiscordColor.FromHexadecimal(0xff9933))
                     .AddField(ProgHelpers.locale["thinKid.top10"], thinKidTop10)));
             }
@@ -1007,7 +1013,7 @@ namespace K8GatherBotv2
                     await http.CreateMessage(ProgHelpers.channelsnowflake, new CreateMessageOptions()
                      .SetEmbed(new EmbedOptions()
                      .SetTitle($"kitsun8's Gatheriino, " + ProgHelpers.locale["status.pickedTeams"])
-                     .SetFooter("Discore (.NET Core), C#, " + ProgHelpers.txtversion)
+                     .SetFooter("K8Gatheriino, " + ProgHelpers.txtversion)
                      .SetColor(DiscordColor.FromHexadecimal(0xff9933))
                      .AddField("Team1: ", string.Join("\n", ProgHelpers.team1.Cast<string>().ToArray()), true)
                      .AddField("Team2: ", string.Join("\n", ProgHelpers.team2.Cast<string>().ToArray()), true)
