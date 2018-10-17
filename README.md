@@ -30,11 +30,12 @@ Originally for Overwatch, but as the team size can be changed from settings, wor
 
 # Details
 
-Bot is running on Discore 4.1 (https://github.com/BundledSticksInkorperated/Discore)
+Bot is running on Discore 4.2.0 (https://github.com/BundledSticksInkorperated/Discore)
 
 Project is running on .NET Core 2.0 https://www.microsoft.com/net/download/all
 
 Authors: kitsun8 & pirate_patch of SuomiOW Discord (Finnish Overwatch community, https://discord.gg/tKezvfH)
+Special thanks: tleikomaa for providing a captain threshold feature!
 
 Language support added for english, default/original language was finnish. Can be changed from appsettings.json
 Thanks to hpr's additions, the bot also keeps track of players' statistics in separate CSV files. If the files are nonexistent, they will be created.
