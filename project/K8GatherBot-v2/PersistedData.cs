@@ -204,15 +204,12 @@ namespace K8GatherBotv2
         public bool IsNewKid(string id, int newKidThreshold)
         {
             int count = 0;
-            var fkentry = fatKids.Find(x => x.id.Equals( id ));
-            if (fkentry != null)
+
+            var hsEntry = highScores.Find(x => x.id.Equals(id));
+            if (hsEntry != null)
             {
-                count += fkentry.count;
-            }
-            var tkentry = thinKids.Find(x => x.id.Equals( id ));
-            if (tkentry != null)
-            {
-                count += tkentry.count;
+                Console.WriteLine("CAPTAIN CHECK - GAMES: " + hsEntry.count + " NAME: " + hsEntry.userName + " CAN BE CAPTAIN: " + (hsEntry.count > newKidThreshold));
+                count += hsEntry.count;
             }
             return count < newKidThreshold;
         }
