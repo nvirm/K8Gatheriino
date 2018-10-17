@@ -1170,8 +1170,12 @@ namespace K8GatherBotv2
                     }
                     ProgHelpers.draftchatnames.AddRange(draftlist);
 
-                    Console.WriteLine(ProgHelpers.draftchatnames.Cast<string>().ToArray());
-                    Console.WriteLine(ProgHelpers.draftchatids.Cast<string>().ToArray());
+                    //2018-10: Type the actual name to log..
+                    var txtdraftnames = String.Join(" , ", ProgHelpers.draftchatnames.ToArray());
+                    Console.WriteLine("!-- STARTING PICKING PHASE --!");
+                    Console.WriteLine("Pick phase, Captain Team 1: " + c1n + ", ID " + c1i);                //Team 1 Captain name and id
+                    Console.WriteLine("Pick phase, Captain Team 2: " + c2n + ", ID " + c2i);                //Team 2 Captain name
+                    Console.WriteLine("Pick phase, available players: " + txtdraftnames);                   //Available players and their pick #
 
                     ProgHelpers.pickturn = ProgHelpers.captain1id; //initial pickturn
 
