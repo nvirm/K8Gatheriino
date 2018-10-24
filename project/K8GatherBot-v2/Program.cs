@@ -53,6 +53,7 @@ namespace K8GatherBotv2
             public static string userChannel = "";
             public static string bottoken = "";
             public static string txtversion = "";
+            public static string gametxt = ""; //2018-10, sets a game status for bot (just because)
             public static string language = ""; //en-fi
 
             public static Dictionary<string, Dictionary<string, string>> locales = new Dictionary<string, Dictionary<string, string>>();
@@ -90,8 +91,10 @@ namespace K8GatherBotv2
             Console.WriteLine("usechannel:" + ProgHelpers.Configuration["Settings:AllowedChannel"]);
             ProgHelpers.bottoken = ProgHelpers.Configuration["Settings:BotToken"];
             Console.WriteLine("token:" + ProgHelpers.Configuration["Settings:BotToken"]);
-            ProgHelpers.txtversion = ProgHelpers.Configuration["Settings:Version"];
+            ProgHelpers.gametxt = ProgHelpers.Configuration["Settings:Version"];
             Console.WriteLine("txtversion:" + ProgHelpers.Configuration["Settings:Version"]);
+            ProgHelpers.gametxt = ProgHelpers.Configuration["Settings:Game"];
+            Console.WriteLine("txtversion:" + ProgHelpers.Configuration["Settings:Game"]);
             ProgHelpers.channelsnowflake.Id = (ulong)Convert.ToInt64(ProgHelpers.Configuration["Settings:AllowedChannel"]); //2018-04
             Console.WriteLine("Set channel Snowflake to match allowed channel"); //2018-04
             Console.WriteLine("END SETTINGS-----------------------------");
@@ -252,11 +255,24 @@ namespace K8GatherBotv2
         {
             Console.WriteLine(DateTime.Now + $" -- #! SHARD CONNECTED !# ----------------------------------------");
             //Shard connected.. doesn't need other actions?
+
+            //2018-10 - Update Bot's status
+            GameOptions game = new GameOptions(ProgHelpers.gametxt);
+            StatusOptions options = new StatusOptions();
+            options.SetGame(game);
+            e.Shard.Gateway.UpdateStatusAsync(options);
         }
         private static async void Shard_OnReconnected(object sender, ShardEventArgs e)
         {
             Console.WriteLine(DateTime.Now + $" -- #! SHARD RECONNECTED !# ----------------------------------------");
             //Shard reconnected.. doesn't need other actions?
+
+            //2018-10 - Update Bot's status
+            GameOptions game = new GameOptions(ProgHelpers.gametxt);
+            StatusOptions options = new StatusOptions();
+            options.SetGame(game);
+            e.Shard.Gateway.UpdateStatusAsync(options);
+
         }
         private static void Shard_OnFailure(object sender, ShardFailureEventArgs e)
         {
@@ -504,7 +520,7 @@ namespace K8GatherBotv2
                     .AddField(ProgHelpers.locale["info.developer"] + " ", "kitsun8 & pirate_patch", false)
                     .AddField(ProgHelpers.locale["info.purpose"] + " ", ProgHelpers.locale["info.purposeAnswer"], false)
                     .AddField(ProgHelpers.locale["info.funFact"] + " ", ProgHelpers.locale["info.funFactAnswer"], false)
-                    .AddField(ProgHelpers.locale["info.commands"] + " ", "!add, !remove/rm, !ready/r, !pick/p, !gatherinfo/gi, !gstatus/gs, !resetbot, !f10/fat10, !fatkid, !top10/topten, !hs/highscore, !tk10, !thinkid, !c10, !captain, !relinquish", false)
+                    .AddField(ProgHelpers.locale["info.commands"] + " ", "!add, !remove/rm, !ready/r, !pick/p, !gatherinfo/gi, !gstatus/gs, !f10/fat10, !fatkid, !top10/topten, !hs/highscore, !tk10, !thinkid, !c10, !captain, !resetbot", false)
                               )
                               );
 
@@ -929,6 +945,7 @@ namespace K8GatherBotv2
             if (ProgHelpers.team1.Count + ProgHelpers.team2.Count == 3)
             {
                 ProgHelpers.persistedData.AddThinKid(selectedPlayerId, selectedPlayerName);
+                Console.WriteLine("Thin kid selected (" + selectedPlayerName + ")");
             }
 
             ProgHelpers.pickturn = nextCaptain;
@@ -946,6 +963,7 @@ namespace K8GatherBotv2
             teamNames.Add(remainingPlayername);
             teamids.Add(remainingPlayer);
             ProgHelpers.persistedData.AddFatKid(remainingPlayer, remainingPlayername);
+            Console.WriteLine("Fat kid selected (" + remainingPlayername + ")");
 
             //Clear draftchat names (you could say this is redundant but..)
             ProgHelpers.draftchatnames.Clear();
@@ -964,10 +982,12 @@ namespace K8GatherBotv2
                 {
                     if (messageAuthorId == ProgHelpers.captain2id || messageAuthorId == ProgHelpers.captain1id)
                     {
+                        Console.WriteLine("!pick -- Not your turn (" + author.Username + ")");
                         await http.CreateMessage(message.ChannelId, $"<@{author.Id}> " + ProgHelpers.locale["pickPhase.notYourTurn"]);
                     }
                     else
                     {
+                        Console.WriteLine("!pick -- Not Captain ("+author.Username+")");
                         await http.CreateMessage(message.ChannelId, $"<@{author.Id}> " + ProgHelpers.locale["pickPhase.notCaptain"]);
                     }
                     return;
@@ -1026,7 +1046,7 @@ namespace K8GatherBotv2
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine("!# Error in CmdPick: " + e.ToString());
             }
         }
 
@@ -1286,14 +1306,14 @@ namespace K8GatherBotv2
             var findx = ProgHelpers.queueids.Find(item => item == authorId);
             if (findx == null)
             {
-                //check offline players
-                //await Offlinecheck();
 
                 //add player to queue
                 ProgHelpers.queueids.Add(authorId);
                 ProgHelpers.queue.Add(authorUserName);
                 http.CreateMessage(message.ChannelId, $"<@!{message.Author.Id}> " + ProgHelpers.locale["queuePhase.added"] + " " + ProgHelpers.queue.Count.ToString() + "/" + ProgHelpers.qcount.ToString());
                 Console.WriteLine("!add - " + ProgHelpers.queue.Count.ToString() + "/" + ProgHelpers.qcount.ToString());
+
+
                 //check if queue is full
                 if (ProgHelpers.queue.Count == ProgHelpers.qcount)
                 {
@@ -1309,6 +1329,7 @@ namespace K8GatherBotv2
             }
             else
             {
+                //Player is already in queue
                 http.CreateMessage(message.ChannelId, $"<@{message.Author.Id}> " + ProgHelpers.locale["queuePhase.alreadyInQueue"] + " " + ProgHelpers.queue.Count.ToString() + "/" + ProgHelpers.qcount.ToString());
                 Console.WriteLine("!add - " + ProgHelpers.queue.Count.ToString() + "/" + ProgHelpers.qcount.ToString() + " --- " + DateTime.Now);
             }
