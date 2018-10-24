@@ -91,10 +91,10 @@ namespace K8GatherBotv2
             Console.WriteLine("usechannel:" + ProgHelpers.Configuration["Settings:AllowedChannel"]);
             ProgHelpers.bottoken = ProgHelpers.Configuration["Settings:BotToken"];
             Console.WriteLine("token:" + ProgHelpers.Configuration["Settings:BotToken"]);
-            ProgHelpers.gametxt = ProgHelpers.Configuration["Settings:Version"];
+            ProgHelpers.txtversion = ProgHelpers.Configuration["Settings:Version"];
             Console.WriteLine("txtversion:" + ProgHelpers.Configuration["Settings:Version"]);
-            ProgHelpers.gametxt = ProgHelpers.Configuration["Settings:Game"];
-            Console.WriteLine("txtversion:" + ProgHelpers.Configuration["Settings:Game"]);
+            ProgHelpers.gametxt = ProgHelpers.Configuration["Settings:Game"]; //2018-10
+            Console.WriteLine("gametxt:" + ProgHelpers.Configuration["Settings:Game"]);//2018-10
             ProgHelpers.channelsnowflake.Id = (ulong)Convert.ToInt64(ProgHelpers.Configuration["Settings:AllowedChannel"]); //2018-04
             Console.WriteLine("Set channel Snowflake to match allowed channel"); //2018-04
             Console.WriteLine("END SETTINGS-----------------------------");
