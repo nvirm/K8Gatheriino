@@ -7,14 +7,12 @@ A bot for Discord that helps people to form pickup games (PUGs).
 Originally for Overwatch, but as the team size can be changed from settings, works with any team based game.
 
 # What it does
-
-0. Reads settings from appsettings.json (sample found in 'settings' in this repo)
-1. Gathers X amount of people to a queue
-2. Asks players to Ready up inside Y amount of time.
+0. Reads settings from appsettings.json (sample found in 'settings/appsettings.json')
+1. Gathers <INSERT QUEUE SIZE> amount of people to a queue
+2. Asks players to Ready up inside <INSERT TIME> seconds of time.
 3. Kicks unreadied players out of the queue.
-4. Decides 2 random team captains.
-4a. Allows Randomed captain to pass captainship to someone with more experience
-5. Allows captains to pick X amount of players to teams, 1 by 1.
+4. Decides 2 random team captains. Captainship requires <INSERT THRESHOLD> games to be played.
+5. Allows captains to pick <INSERT QUEUE SIZE> amount of players to teams, 1 by 1.
 6. Announces teams when all players have been picked.
 
 # Extra features
@@ -30,12 +28,37 @@ Originally for Overwatch, but as the team size can be changed from settings, wor
 
 # Details
 
-Bot is running on Discore 4.2.0 (https://github.com/BundledSticksInkorperated/Discore)
+*Languages:*
+- English
+- Finnish
 
-Project is running on .NET Core 2.0 https://www.microsoft.com/net/download/all
+*Technical information:*
+- Bot is running on Discore 4.2.0 (https://github.com/BundledSticksInkorperated/Discore)
+- Project is running on .NET Core 2.0 https://www.microsoft.com/net/download/all
+- Hosting can be run on Windows, Linux, OS X (Only Windows & OSX tested)
+- See settings/appsettings.json for settings-file guidance.
 
-Authors: kitsun8 & pirate_patch of SuomiOW Discord (Finnish Overwatch community, https://discord.gg/tKezvfH)
-Special thanks: tleikomaa for providing a captain threshold feature!
+*Authors:* 
+- kitsun8 & pirate_patch of SuomiOW Discord (Finnish Overwatch community, https://discord.gg/tKezvfH)
 
-Language support added for english, default/original language was finnish. Can be changed from appsettings.json
-Thanks to hpr's additions, the bot also keeps track of players' statistics in separate CSV files. If the files are nonexistent, they will be created.
+*Special thanks:* 
+- tleikomaa for providing a captain threshold feature!
+- pirate_patch for providing Persistent Data (top lists etc.)
+
+# Command List
+
+!add
+!remove / !rm
+!ready / !r
+!pick / !p
+!gatherinfo / !gi
+!gstatus / !gs
+!f10 / !fat10
+!fatkid
+!top10 / !topten
+!hs / !highscore
+!tk10
+!thinkid
+!c10
+!captain
+!resetbot
