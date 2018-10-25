@@ -47,18 +47,18 @@ Originally for Overwatch, but as the team size can be changed from settings, wor
 
 # Command List
 
-!add
-!remove / !rm
-!ready / !r
-!pick / !p
-!gatherinfo / !gi
-!gstatus / !gs
-!f10 / !fat10
-!fatkid
-!top10 / !topten
-!hs / !highscore
-!tk10
-!thinkid
-!c10
-!captain
-!resetbot
+- !add
+- !remove / !rm
+- !ready / !r
+- !pick / !p
+- !gatherinfo / !gi
+- !gstatus / !gs
+- !f10 / !fat10
+- !fatkid
+- !top10 / !topten
+- !hs / !highscore
+- !tk10
+- !thinkid
+- !c10
+- !captain
+- !resetbot
