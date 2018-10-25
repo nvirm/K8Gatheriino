@@ -26,7 +26,7 @@ Originally for Overwatch, but as the team size can be changed from settings, wor
 5. Sorts users to top10 last picked list
 6. Sorts users to top10 first picked list
 7. Allows fetching individual userstats card
-8. Allows players to never get randomed as captain
+8. Follows a threshold of captainship, new players don't get randomed as captain.
 
 # Details
 
