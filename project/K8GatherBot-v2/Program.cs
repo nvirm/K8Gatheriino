@@ -13,63 +13,99 @@ using System.Threading.Tasks;
 
 namespace K8GatherBotv2
 {
+
+/*
+Thanks for checking out K8Gatheriino.
+Made with love and coffee. More or less the other.
+      
+   :o`                                      `o:   
+   `MN+`                                  `+NM`   
+    dMmm+                                +mmMd    
+    oMsymm/                            /mmysMo    
+    :Mhooymd:                        :dmyoohM:    
+     Ndossohmh-                    -hmhossodN     
+     hNoyNdsshNy-                -yNhssdNyoNh     
+     oMsoMMNdssdmy.            .yNdssdNMMosMo     
+     -MhomMMMNhssdmhhhhhhhhhhhhmdsshNMMMmohM-     
+      NmodMMMNdooossssssssssssssooodNMMMdomN      
+      hNoyMMmsoooooooooooooooooooooosmMMyoNh      
+      +MssNyooooooooooooooooooooooooooyNssM+      
+      .MhosoooooooooooooooooooooooooooosohM.      
+      -MdoooooooooooooooooooooooooooooooodM-      
+     :NdooooossoooooooooooooooooooossooooodN:     
+    :NdooooooymmdhyssoooooooossyhdmmyoooooodN:    
+   /NdoooooooosdMMNdyooooooooydNMMdsoooooooodN/   
+  +NhooooooooooosysoooooooooooosysooooooooooohN+  
+ +Nhoo+++/:--/oooooooooooooooooooooo/--:/+++oohN+ 
++Md/-.`       .:+oooooooooooooooo+:.       `.-/dM+
+./sdhs/.`       `-+oooossssoooo+-`       `./shds/.
+    .:ohhy+-`      ./hmNMMNmh/.      `-+yhho:.    
+        `:ohdy+-`    .omMMmo.    `-+ydho:`        
+            `-+ydyo:`  `//`  `:oydy+-`            
+                 -/ydhs/``/shdy/-                 
+                     -+ymmy+-
+                            
+*/
+
     class Program
     {
         DiscordHttpClient http;
 
         public static class ProgHelpers
         {
-            //things needed for obvious reasons
-            public static IConfigurationRoot Configuration { get; set; }
-            public static PersistedData persistedData { get; set; }
+            //NOTE: This program uses both Discord Usernames and UserIDs. 
+            //UserIDs are more reliable, because they can not be changed. Keep this in mind when developing.
+            public static IConfigurationRoot Configuration { get; set; }    //Initialize Configuration dependency
+            public static PersistedData persistedData { get; set; }         //Initialize Persisted Data (Stored data)
 
-            public static List<string> queue = new List<string>(); //names
-            public static List<string> queueids = new List<string>(); //discord ids
-            public static List<string> readycheckids = new List<string>(); //readycheck
-            public static List<string> readycheck = new List<string>(); //readychecknames
+            //Queue---------------------------------------------------------------------------------------------
+            public static List<string> queue = new List<string>();          //Queue: Discord Usernames (string)
+            public static List<string> queueids = new List<string>();       //Queue: Discord UserIDs (string)
+            public static List<string> readycheckids = new List<string>();  //Readycheck: Discord UserIDs (string)
+            public static List<string> readycheck = new List<string>();     //Readycheck: Discord Usernames (string)
+            
+            //Team 1--------------------------------------------------------------------------------------------
+            public static string captain1 = "";                             //Captain Team1: Discord Username (string)
+            public static string captain1id = "";                           //Captain Team1: Discord UserID (string)
+            public static List<string> team1 = new List<string>();          //Team1: Discord Usernames (List of string)
+            public static List<string> team1ids = new List<string>();       //Team1: Discord UserIDs (List of string)
+            
+            //Team 2--------------------------------------------------------------------------------------------
+            public static string captain2 = "";                             //Captain Team2: Discord Username (string)
+            public static string captain2id = "";                           //Captain Team2: Discord UserID (string)
+            public static List<string> team2 = new List<string>();          //Team2: Discord Usernames (List of string)
+            public static List<string> team2ids = new List<string>();       //Team2: Discord UserIDs (List of string)
 
-            public static string captain1 = "";
-            public static string captain1id = "";
-            public static List<string> team1 = new List<string>();
-            public static List<string> team1ids = new List<string>();
-
-            public static string captain2 = "";
-            public static string captain2id = "";
-            public static List<string> team2 = new List<string>();
-            public static List<string> team2ids = new List<string>();
-
-            //Workaround to keep initial list numbering for the whole draft, show names from another list.
+            //Draftlist------------------------------------------------------------------------------------------
+            //Note: Workaround to keep initial list numbering for the whole draft, show names from another list.
+            //Entries to this list are filled when ready check is complete & captains are randomed (all players except captains are in this list)
+            //Entries from these lists are removed each time a player is !pick:ed.
             public static List<string> draftchatnames = new List<string>();
             public static List<string> draftchatids = new List<string>();
+            public static string pickturn = ""; //Pick turn: Initial value "", team1 is cap1id, team2 is cap2id (this is toggled until teams are full)
 
-            public static string pickturn = ""; //initial "", team1 is cap1id, team2 is cap2id
-
-            //Timer length
-            public static int _counter = 0; //initial value
-
-            public static int counterlimit = 0; //maxvalue
-                                                //queuesize and channel to listen
-            public static int qcount = 0; //minimum count is 4
-            public static string userChannel = "";
-            public static string bottoken = "";
-            public static string txtversion = "";
-            public static string gametxt = ""; //2018-10, sets a game status for bot (just because)
-            public static string language = ""; //en-fi
-
+            //Technical defaults----------------------------------------------------------------------------------------
+            public static int _counter = 0; //Readytimer: Inital Value
+            public static int counterlimit = 0; //Readytimer: Max value (Time in seconds after which players who are not ready are removed from queue.)
+            public static int qcount = 0; //Queuesize: Max players in queue
+            public static string userChannel = ""; //Channel: Channel to listen for messages (Discord debug for ID)
+            public static string bottoken = ""; //Bot: Bot token for the bot, Discord developer panel https://discordapp.com/developers/applications/me
+            public static string txtversion = ""; //Version: Version txt that is shown in bot embed messages.
+            public static string gametxt = ""; //Game: Set a custom "Playing <GAME>" text for bot.
+            public static string language = ""; //Language: Set your chosen language (fi = finnish, en = english)
+            public static int newKidThreshold = 10;  //CaptainThreshold: Threshold of games played until you can become captain, defaults at 10, overridden by appsettings.json.
+            public static int giveupThreshold = 100; //CaptainThreshold: Threshold to prevent infinite loop, 100 should be sufficient always.
+            public static int developmentMode = 0; //DevelopmentMode: 0 false, 1 true. Enables or disables some commands 
+            //Languages----------------------------------------------------------------------------------------
             public static Dictionary<string, Dictionary<string, string>> locales = new Dictionary<string, Dictionary<string, string>>();
-
             public static Dictionary<string, string> locale;
-
+            //Discord gateway----------------------------------------------------------------------------------------
             public static Snowflake channelsnowflake = new Snowflake();
-
-            public static int newKidThreshold = 10;  //2018-10, Threshold of games played until you can become captain, defaults at 10, overridden by appsettings.json.
-            public static int giveupThreshold = 100; //2018-10, Threshold to prevent infinite loop, 100 should be sufficient always.
-
         }
 
         static void Main(string[] args)
         {
-            //Get settings and GO
+            //READ SETTINGS----------------------------------------------------------------------------------------
             Console.WriteLine("Reading settings from appsettings.json");
 
             var builder = new ConfigurationBuilder()
@@ -79,6 +115,9 @@ namespace K8GatherBotv2
             ProgHelpers.persistedData = new PersistedData();
 
             Console.WriteLine("START SETTINGS-----------------------------");
+            //TODO: Check if one of the parameters is missing from the file, exit program if something is missing.
+            ProgHelpers.developmentMode = Convert.ToInt32(ProgHelpers.Configuration["Settings:DeveloperMode"]); //2018-10
+            Console.WriteLine("developmentMode:" + Convert.ToInt32(ProgHelpers.Configuration["Settings:DeveloperMode"])); //2018-10
             ProgHelpers.qcount = Convert.ToInt32(ProgHelpers.Configuration["Settings:Queuesize"]);
             Console.WriteLine("qcount:" + Convert.ToInt32(ProgHelpers.Configuration["Settings:Queuesize"]));
             ProgHelpers.counterlimit = Convert.ToInt32(ProgHelpers.Configuration["Settings:Readytimer"]);
@@ -107,6 +146,7 @@ namespace K8GatherBotv2
             Console.WriteLine("#! Reached END OF PROGRAM !#");
         }
 
+        //TRANSLATIONS----------------------------------------------------------------------------------------
         public static void initLocalizations()
         {
             Dictionary<string, string> fi = new Dictionary<string, string>();
@@ -114,6 +154,7 @@ namespace K8GatherBotv2
             ProgHelpers.locales.Add("fi", fi);
             ProgHelpers.locales.Add("en", en);
 
+            //Finnish localization
             fi.Add("pickPhase.alreadyInProcess", "Odota kunnes edellinen jono on käsitelty.");
             fi.Add("queuePhase.added", "Lisätty!");
             fi.Add("readyPhase.started", "Jono on nyt täynnä, merkitse itsesi valmiiksi käyttäen ***!ready*** komentoa. \n Aikaa 60 sekuntia!");
@@ -126,7 +167,6 @@ namespace K8GatherBotv2
             fi.Add("pickPhase.started", "Readycheck valmis, aloitetaan poimintavaihe! Ensimmäinen poiminta: Team 1 \n Team1:n kapteeni:");
             fi.Add("pickPhase.team2Captain", "Team 2:n kapteeni:");
             fi.Add("pickPhase.instructions", "Poimi pelaajia käyttäen ***!pick NUMERO***");
-            //fi.Add("txt13",  "Näyttäisi siltä ettet ole jonossa.");
             fi.Add("pickPhase.team2Turn", "Pelaaja lisätty Team 1:n! \n Team 2:n vuoro poimia!");
             fi.Add("pickPhase.team1Turn", "Pelaaja lisätty Team 2:n! \n Team 1:n vuoro poimia!");
             fi.Add("pickPhase.unpicked", "***Poimimatta:***");
@@ -146,8 +186,6 @@ namespace K8GatherBotv2
             fi.Add("info.commands", "Komennot");
             fi.Add("status.queuePlayers", "Pelaajat");
             fi.Add("status.notReady", "EI VALMIINA");
-            //fi.Add("txt32",  "Poistettu koska käyttäjä on ***OFFLINE***.");
-            //fi.Add("txt33",  "Aloitetaan readycheck. Teillä on 60 sekuntia aikaa käyttää ***!ready*** komentoa.");
             fi.Add("readyPhase.timeout", "Kaikki pelaajat eivät olleet valmiita readycheckin aikana. Palataan jonoon valmiina olleiden pelaajien kanssa.");
             fi.Add("readyPhase.alreadyMarkedReady", "Olet jo merkinnyt itsesi valmiiksi!");
             fi.Add("readyPhase.cannotAdd", "Odota poimintavaiheen päättymistä!");
@@ -167,6 +205,7 @@ namespace K8GatherBotv2
             fi.Add("relinq.pickPhaseStarted", "Olet jo valinnut pelaajan, liian myöhäistä luopua tehtävästä.");
             fi.Add("relinq.successful", "Luovuit kapteeninhommista onnistuneesti, uusi kapteeni on: ");
 
+            //English localization
             en.Add("pickPhase.alreadyInProcess", "Please wait until the previous queue is handled.");
             en.Add("queuePhase.added", "Added!");
             en.Add("readyPhase.started", "Queue is now full, proceed to mark yourself ready with ***!ready*** \n You have 60 seconds!");
@@ -179,7 +218,6 @@ namespace K8GatherBotv2
             en.Add("pickPhase.started", "Readycheck complete, starting picking phase! First picking turn: Team 1 \n Team 1 Captain:");
             en.Add("pickPhase.team2Captain", "Team 2 Captain:");
             en.Add("pickPhase.instructions", "Pick players using ***!pick NUMBER***");
-            //en.Add("txt13",  "It seems you're not in the queue.");
             en.Add("pickPhase.team2Turn", "Player added to Team 1!\n Team 2 Turn to pick!");
             en.Add("pickPhase.team1Turn", "Player added to Team 2! \n Team 1 Turn to pick!");
             en.Add("pickPhase.unpicked", "***Remaining players:***");
@@ -199,8 +237,6 @@ namespace K8GatherBotv2
             en.Add("info.commands", "Commands");
             en.Add("status.queuePlayers", "Players");
             en.Add("status.notReady", "NOT READY YET:");
-            //en.Add("txt32", "Removed because status is ***Offline***");
-            //en.Add("txt33", "Starting Readycheck timer, you have 60 seconds to ***!ready*** yourself.");
             en.Add("readyPhase.timeout", "Not all players were ready during the readycheck. Returning to queue with players that were ready.");
             en.Add("readyPhase.cannotAdd", "Wait until the picking phase is over.");
             en.Add("readyPhase.alreadyMarkedReady", "You have already readied!");
@@ -221,6 +257,7 @@ namespace K8GatherBotv2
             en.Add("relinq.successful", "Captainship relinquished successfully, new captain is: ");
         }
 
+        //RUN PROGRAM----------------------------------------------------------------------------------------
         public async Task Run()
         {
             
@@ -250,7 +287,7 @@ namespace K8GatherBotv2
             }
         }
 
-        //----------------------------------------------------- 2018-04 New connection management pieces.
+        //HANDLE SHARD EVENTS----------------------------------------------------------------------------------------
         private static async void Shard_OnConnected(object sender, ShardEventArgs e)
         {
             Console.WriteLine(DateTime.Now + $" -- #! SHARD CONNECTED !# ----------------------------------------");
@@ -294,18 +331,22 @@ namespace K8GatherBotv2
             }
             //Shard has failed, need to Run whole auth again!
             //EXPERIMENTAL! Trying to get the existing shard and stop it first (check if this actually exits the whole program), then run another.. Run.
+            Console.WriteLine("-- #! SHARD HAS FAILED, TRYING TO START AGAIN !# --");
+
             Shard shard = e.Shard;
             shard.StopAsync();
+            Console.WriteLine("-- #! SHARD STOPPED ASYNC !# --");
 
             Program program = new Program();
+            Console.WriteLine("-- #! STARTING A NEW INSTANCE !# --");
             program.Run().Wait();
         }
 
 
-        //------------------------------------------------------------------------Not Ready announce
+        //NOT READY ANNOUNCE----------------------------------------------------------------------------------------
         public async Task RunNotRdyannounce()
         {
-            Console.WriteLine(DateTime.Now + $" #! NOT READY ANNOUNCE START !#");
+            Console.WriteLine(DateTime.Now + $"-- #! NOT READY ANNOUNCE START !# --");
             DiscordHttpClient http2;
             http2 = new DiscordHttpClient(ProgHelpers.bottoken); //Use BOT token from settings
             // Create a single shard.
@@ -325,7 +366,7 @@ namespace K8GatherBotv2
             
         }
 
-        //------------------------------------------------------------------------Timer for ready check
+        //READYCHECK TIMER----------------------------------------------------------------------------------------
         public static Timer _tm = null;
         public static AutoResetEvent _autoEvent = null;
 
@@ -337,7 +378,6 @@ namespace K8GatherBotv2
             _tm = new Timer(Checkrdys, _autoEvent, 1000, 1000);
 
             Console.WriteLine("RDYCHECK ACTIVATED --- " + DateTime.Now.ToString());
-            //Console.Read();
         }
 
         public static void Checkrdys(Object stateInfo)
@@ -354,7 +394,7 @@ namespace K8GatherBotv2
 
                 foreach (string item in notinlist)
                 {
-                    var fndr1 = ProgHelpers.queueids.IndexOf(item); //Get index because discord name can change, id can not
+                    var fndr1 = ProgHelpers.queueids.IndexOf(item); //Get index of Discord UserID, UName can change, ID can not
 
                     ProgHelpers.queue.RemoveAt(fndr1);
                     ProgHelpers.queueids.Remove(item);
@@ -368,14 +408,14 @@ namespace K8GatherBotv2
 
             }
 
-            //dispose of the currenttimer
+            //Reset timer
             _tm.Dispose();
             ProgHelpers._counter = 0;
 
             Console.WriteLine("RDYCHECK EXPIRED --- " + DateTime.Now.ToString());
         }
 
-        //------------------------------------------------------------------------Gateway messages parsing
+        //PARSE GATEWAY MESSAGES----------------------------------------------------------------------------------------
         private async void Gateway_OnMessageCreated(object sender, MessageEventArgs e)
         {
             Shard shard = e.Shard;
@@ -383,10 +423,11 @@ namespace K8GatherBotv2
 
 
             if (message.Author.Id == shard.UserId)
-                // Ignore messages created by our bot.
-                return;
+            {
+                return; //Disregard Bot's own messages
+            }
 
-            if (message.ChannelId.Id.ToString() != ProgHelpers.userChannel)//Prevent DM abuse, only react to messages sent on a set channel.
+            if (message.ChannelId.Id.ToString() != ProgHelpers.userChannel) //Prevent DM abuse, only react to messages sent on a set channel.
             {
                 return;
             }
@@ -395,6 +436,7 @@ namespace K8GatherBotv2
 
             switch (msgBody)
             {
+                //TODO: Add a parameter if //haHAA commands will be used or not
                 case "!abb":    //haHAA!
                 case "!asd":    //haHAA!
                 case "!fap":    //haHAA!
@@ -418,19 +460,9 @@ namespace K8GatherBotv2
                 case "!r":
                     await CmdReady(shard, message);
                     break;
-                //case "!wimp":
-                //case "!nofuckingway":
-                //case "!noob":
-                //case "!relinquish":
-                //    await http.CreateMessage(message.ChannelId, $"<@!{message.Author.Id}>" + " Äijä hei. Älä viitti. Yritä edes. :-)");
-                    //await CmdRelinquishCaptainship(shard, message);
-                    //break;
                 case "!pick":
                 case "!p":
                     await CmdPick(shard, message);
-                    break;
-                case "!fakeriino":
-                    CmdFakeriino(shard, message);
                     break;
                 case "!pstats":
                     await CmdPlayerStats(shard, message);
@@ -470,9 +502,22 @@ namespace K8GatherBotv2
                     await CmdResetBot(shard, message);
                     break;
                 case "!gatherinfo":
+                case "!ginfo":
                 case "!gi":
                     await CmdGatherInfo(shard, message);
                     break;
+                case "!fakeriino":
+                    if (ProgHelpers.developmentMode == 1)
+                    {
+                        //Only run in developmentmode = 1
+                        CmdFakeriino(shard, message);
+                    }
+                    break;
+                //Note: Relinquish feature disabled as Work-In-Progress, threshold took the place of this.
+                //Not removing the code however, might prove useful in something else.
+                    //case "!relinquish":
+                    //await CmdRelinquishCaptainship(shard, message);
+                    //break;
             }
 
         }
@@ -520,7 +565,7 @@ namespace K8GatherBotv2
                     .AddField(ProgHelpers.locale["info.developer"] + " ", "kitsun8 & pirate_patch", false)
                     .AddField(ProgHelpers.locale["info.purpose"] + " ", ProgHelpers.locale["info.purposeAnswer"], false)
                     .AddField(ProgHelpers.locale["info.funFact"] + " ", ProgHelpers.locale["info.funFactAnswer"], false)
-                    .AddField(ProgHelpers.locale["info.commands"] + " ", "!add, !remove/rm, !ready/r, !pick/p, !gatherinfo/gi, !gstatus/gs, !f10/fat10, !fatkid, !top10/topten, !hs/highscore, !tk10, !thinkid, !c10, !captain, !resetbot", false)
+                    .AddField(ProgHelpers.locale["info.commands"] + " ", "!add, !remove/rm, !ready/r, !pick/p, !ginfo/gi/gatherinfo, !gstatus/gs, !f10/fat10, !fatkid, !top10/topten, !hs/highscore, !tk10, !thinkid, !c10, !captain, !resetbot", false)
                               )
                               );
 
