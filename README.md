@@ -63,3 +63,4 @@ Originally for Overwatch, but as the team size can be changed from settings, wor
 - !c10
 - !captain
 - !resetbot
+- #test_add

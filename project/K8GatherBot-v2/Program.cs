@@ -95,7 +95,8 @@ Made with love and coffee. More or less the other.
             public static string language = ""; //Language: Set your chosen language (fi = finnish, en = english)
             public static int newKidThreshold = 10;  //CaptainThreshold: Threshold of games played until you can become captain, defaults at 10, overridden by appsettings.json.
             public static int giveupThreshold = 100; //CaptainThreshold: Threshold to prevent infinite loop, 100 should be sufficient always.
-            public static int developmentMode = 0; //DevelopmentMode: 0 false, 1 true. Enables or disables some commands 
+            public static int developmentMode = 0; //DevelopmentMode: 0 false, 1 true. Enables or disables some commands
+            public static int additionalAddCmd = 0; //AdditionalAddCmd: 0 false, 1 true. Enables more !add commands (some people like to jest :)), If a more serious venue is needed, can be toggled.
             //Languages----------------------------------------------------------------------------------------
             public static Dictionary<string, Dictionary<string, string>> locales = new Dictionary<string, Dictionary<string, string>>();
             public static Dictionary<string, string> locale;
@@ -118,6 +119,8 @@ Made with love and coffee. More or less the other.
             //TODO: Check if one of the parameters is missing from the file, exit program if something is missing.
             ProgHelpers.developmentMode = Convert.ToInt32(ProgHelpers.Configuration["Settings:DeveloperMode"]); //2018-10
             Console.WriteLine("developmentMode:" + Convert.ToInt32(ProgHelpers.Configuration["Settings:DeveloperMode"])); //2018-10
+            ProgHelpers.additionalAddCmd = Convert.ToInt32(ProgHelpers.Configuration["Settings:AdditionalAddCmd"]); //2018-10
+            Console.WriteLine("additionalAddCmd:" + Convert.ToInt32(ProgHelpers.Configuration["Settings:AdditionalAddCmd"])); //2018-10
             ProgHelpers.qcount = Convert.ToInt32(ProgHelpers.Configuration["Settings:Queuesize"]);
             Console.WriteLine("qcount:" + Convert.ToInt32(ProgHelpers.Configuration["Settings:Queuesize"]));
             ProgHelpers.counterlimit = Convert.ToInt32(ProgHelpers.Configuration["Settings:Readytimer"]);
@@ -436,7 +439,6 @@ Made with love and coffee. More or less the other.
 
             switch (msgBody)
             {
-                //TODO: Add a parameter if //haHAA commands will be used or not
                 case "!abb":    //haHAA!
                 case "!asd":    //haHAA!
                 case "!fap":    //haHAA!
@@ -449,6 +451,12 @@ Made with love and coffee. More or less the other.
                 case "!ad":     //haHAA!
                 case "!mad":    //haHAA!
                 case "!grand":  //haHAA!
+                    if (ProgHelpers.additionalAddCmd == 1)
+                    {
+                        //Only run in AdditionalAddCmd = 1
+                        await CmdAdd(shard, message);
+                    }
+                    break;
                 case "!add":
                     await CmdAdd(shard, message);
                     break;
@@ -506,7 +514,7 @@ Made with love and coffee. More or less the other.
                 case "!gi":
                     await CmdGatherInfo(shard, message);
                     break;
-                case "!fakeriino":
+                case "#test_add":
                     if (ProgHelpers.developmentMode == 1)
                     {
                         //Only run in developmentmode = 1
@@ -794,62 +802,64 @@ Made with love and coffee. More or less the other.
             }
         }
 
+        //DeveloperCommand - Test Adds
         private void CmdFakeriino(Shard shard, DiscordMessage message)
         {
             
-            HandleAdd(message, "240432007908294656", "pirate_patch");
+            HandleAdd(message, "010", "User X");
             Thread.Sleep(100);
-            HandleAdd(message, "111", "kerpo");
+            HandleAdd(message, "111", "User A");
             Thread.Sleep(100);
-            HandleAdd(message, "222", "jonne");
+            HandleAdd(message, "222", "User B");
             Thread.Sleep(100);
-            HandleAdd(message, "333", "spede");
+            HandleAdd(message, "333", "User C");
             Thread.Sleep(100);
-            HandleAdd(message, "444", "test1");
+            HandleAdd(message, "444", "User D");
             Thread.Sleep(100);
-            HandleAdd(message, "555", "test2");
+            HandleAdd(message, "555", "User E");
             Thread.Sleep(100);
-            HandleAdd(message, "666", "test3");
+            HandleAdd(message, "666", "User F");
             Thread.Sleep(100);
-            HandleAdd(message, "777", "test4");
+            HandleAdd(message, "777", "User G");
             Thread.Sleep(100);
-            HandleAdd(message, "888", "test5");
+            HandleAdd(message, "888", "User H");
             Thread.Sleep(100);
-            HandleAdd(message, "999", "test6");
+            HandleAdd(message, "999", "User I");
             Thread.Sleep(100);
-            HandleAdd(message, "000", "test7");
+            HandleAdd(message, "000", "User J");
             Thread.Sleep(100);
-            HandleAdd(message, "991", "test8");
+            HandleAdd(message, "101", "User K");
             Thread.Sleep(100);
 
-            HandleReady(message, "240432007908294656", "pirate_patch");
+            HandleReady(message, "010", "User X");
             Thread.Sleep(100);
-            HandleReady(message, "111", "kerpo");
+            HandleReady(message, "111", "User A");
             Thread.Sleep(100);
-            HandleReady(message, "222", "jonne");
+            HandleReady(message, "222", "User B");
             Thread.Sleep(100);
-            HandleReady(message, "333", "spede");
+            HandleReady(message, "333", "User C");
             Thread.Sleep(100);
-            HandleReady(message, "444", "test1");
+            HandleReady(message, "444", "User D");
             Thread.Sleep(100);
-            HandleReady(message, "555", "test2");
+            HandleReady(message, "555", "User E");
             Thread.Sleep(100);
-            HandleReady(message, "666", "test3");
+            HandleReady(message, "666", "User F");
             Thread.Sleep(100);
-            HandleReady(message, "777", "test4");
+            HandleReady(message, "777", "User G");
             Thread.Sleep(100);
-            HandleReady(message, "888", "test5");
+            HandleReady(message, "888", "User H");
             Thread.Sleep(100);
-            HandleReady(message, "999", "test6");
+            HandleReady(message, "999", "User I");
             Thread.Sleep(100);
-            HandleReady(message, "000", "test7");
+            HandleReady(message, "000", "User J");
             Thread.Sleep(100);
-            HandleReady(message, "991", "test8");
+            HandleReady(message, "101", "User K");
             Thread.Sleep(100);
-            //            ChangeCaptain("team1", "111", "kerpo", textChannel);
 
         }
 
+        //Note: Relinquish feature disabled as Work-In-Progress, threshold took the place of this.
+        //Not removing the code however, might prove useful in something else.
         private async Task CmdRelinquishCaptainship(Shard shard, DiscordMessage message)
         {
 
