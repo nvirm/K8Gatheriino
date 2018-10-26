@@ -97,6 +97,8 @@ Made with love and coffee. More or less the other.
             public static int giveupThreshold = 100; //CaptainThreshold: Threshold to prevent infinite loop, 100 should be sufficient always.
             public static int developmentMode = 0; //DevelopmentMode: 0 false, 1 true. Enables or disables some commands
             public static int additionalAddCmd = 0; //AdditionalAddCmd: 0 false, 1 true. Enables more !add commands (some people like to jest :)), If a more serious venue is needed, can be toggled.
+            public static int restrictReset = 0; //RestrictResetCmd: 0 false, 1 true. True restricts !resetbot command to a role specified in restrictResetRole
+            public static string restrictResetRole = "";  //RestrictResetCmdRole: String format rolename for user that CAN use !resetbot
             //Languages----------------------------------------------------------------------------------------
             public static Dictionary<string, Dictionary<string, string>> locales = new Dictionary<string, Dictionary<string, string>>();
             public static Dictionary<string, string> locale;
@@ -106,8 +108,19 @@ Made with love and coffee. More or less the other.
 
         static void Main(string[] args)
         {
+            Console.WriteLine("# K8Gatheriino, PUG arrangement bot for discord #");
+            Console.WriteLine("# --------------------------------------------- #");
             //READ SETTINGS----------------------------------------------------------------------------------------
             Console.WriteLine("Reading settings from appsettings.json");
+            var settingsfile = File.Exists("appsettings.json");
+            if (settingsfile == false)
+            {
+                //No settings file present, exit application after 5 seconds.
+                Console.WriteLine("No appsettings.json found.");
+                Console.WriteLine("Seek instructions: https://github.com/kitsun8/K8Gatheriino");
+                Thread.Sleep(5000);
+                return;
+            }
 
             var builder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
@@ -116,7 +129,6 @@ Made with love and coffee. More or less the other.
             ProgHelpers.persistedData = new PersistedData();
 
             Console.WriteLine("START SETTINGS-----------------------------");
-            //TODO: Check if one of the parameters is missing from the file, exit program if something is missing.
             ProgHelpers.developmentMode = Convert.ToInt32(ProgHelpers.Configuration["Settings:DeveloperMode"]); //2018-10
             Console.WriteLine("developmentMode:" + Convert.ToInt32(ProgHelpers.Configuration["Settings:DeveloperMode"])); //2018-10
             ProgHelpers.additionalAddCmd = Convert.ToInt32(ProgHelpers.Configuration["Settings:AdditionalAddCmd"]); //2018-10
@@ -127,6 +139,10 @@ Made with love and coffee. More or less the other.
             Console.WriteLine("counterlimit:" + Convert.ToInt32(ProgHelpers.Configuration["Settings:Readytimer"]));
             ProgHelpers.newKidThreshold = Convert.ToInt32(ProgHelpers.Configuration["Settings:CaptainThreshold"]); //2018-10
             Console.WriteLine("captainthreshold:" + Convert.ToInt32(ProgHelpers.Configuration["Settings:CaptainThreshold"])); //2018-10
+            ProgHelpers.restrictReset = Convert.ToInt32(ProgHelpers.Configuration["Settings:RestrictResetCmd"]); //2018-10
+            Console.WriteLine("restrictReset:" + ProgHelpers.Configuration["Settings:RestrictResetCmd"]); //2018-10
+            ProgHelpers.restrictResetRole = ProgHelpers.Configuration["Settings:RestrictResetCmdRole"]; //2018-10
+            Console.WriteLine("restrictResetRole:" + ProgHelpers.Configuration["Settings:RestrictResetCmdRole"]); //2018-10
             ProgHelpers.language = ProgHelpers.Configuration["Settings:Language"];
             Console.WriteLine("language:" + ProgHelpers.Configuration["Settings:Language"]);
             ProgHelpers.userChannel = ProgHelpers.Configuration["Settings:AllowedChannel"];
@@ -507,7 +523,46 @@ Made with love and coffee. More or less the other.
                     await CmdGStatus(shard, message);
                     break;
                 case "!resetbot":
-                    await CmdResetBot(shard, message);
+                    if (ProgHelpers.restrictReset == 1)
+                    {
+                        //Only restricted roles can use the command (appsettings)
+
+                        Console.WriteLine("#! Checking permissions for !resetbot !#");
+                        //NOTE: The following function is made with a HTTP API call. 
+                        //HTTP API calls are restricted to be used only seldomly. 
+                        //This command, however, shouldn't be called upon very often.
+
+                        DiscordGuildTextChannel textChannel = await http.GetChannel<DiscordGuildTextChannel>(message.ChannelId); //Get the textchannel
+                        IReadOnlyList<DiscordRole> roles = await http.GetGuildRoles(textChannel.GuildId); //Get all roles in the textchannel
+                        //Get Role ID of the Role Name specified in appsettings.json
+                        var selRole = roles.FirstOrDefault(x => x.Name == ProgHelpers.restrictResetRole);
+                        if (selRole != null)
+                        {
+                            Console.WriteLine("#! Found a match for role from appsettings.json !#");
+                            // Get the message author member and match role Id against the resolved role Id
+                            DiscordGuildMember member = await http.GetGuildMember(textChannel.GuildId, message.Author.Id);
+                            var selRoleString = selRole.Id.ToString();
+                            var memberRole = member.RoleIds.Where(x => x.Id.ToString() == selRoleString);
+                            if (memberRole.Any())
+                            {
+                                Console.WriteLine("#! User has permission to !resetbot !#");
+                                await CmdResetBot(shard, message);
+                            }
+                            else
+                            {
+                                Console.WriteLine("#! User does not have permission to !resetbot !#");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("#! No match for role from appsettings.json !#");
+                        }  
+                    }
+                    else
+                    {
+                            //Anyone is allowed to use the command (appsettings)
+                            await CmdResetBot(shard, message);
+                    }
                     break;
                 case "!gatherinfo":
                 case "!ginfo":
