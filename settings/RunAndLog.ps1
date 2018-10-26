@@ -1,0 +1,1 @@
+﻿dotnet K8GatherBotv2.dll | tee gatherbot_log.txt
