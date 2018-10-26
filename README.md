@@ -36,7 +36,8 @@ Originally for Overwatch, but as the team size can be changed from settings, wor
 - Bot is running on Discore 4.2.0 (https://github.com/BundledSticksInkorperated/Discore)
 - Project is running on .NET Core 2.0 https://www.microsoft.com/net/download/all
 - Hosting can be run on Windows, Linux, OS X (Only Windows & OSX tested)
-- See settings/appsettings.json for settings-file guidance.
+- See "settings/appsettings.json" for settings-file guidance.
+- Example of running on Windows platform with logging to file can be found in "settings/RunAndLog.ps1"
 
 *Authors:* 
 - kitsun8 & pirate_patch of SuomiOW Discord (Finnish Overwatch community, https://discord.gg/tKezvfH)
