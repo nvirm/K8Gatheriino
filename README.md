@@ -8,11 +8,11 @@ Originally for Overwatch, but as the team size can be changed from settings, wor
 
 # What it does
 0. Reads settings from appsettings.json (sample found in 'settings/appsettings.json')
-1. Gathers <INSERT QUEUE SIZE> amount of people to a queue
-2. Asks players to Ready up inside <INSERT TIME> seconds of time.
+1. Gathers INSERT QUEUE SIZE amount of people to a queue
+2. Asks players to Ready up inside INSERT TIME seconds of time.
 3. Kicks unreadied players out of the queue.
-4. Decides 2 random team captains. Captainship requires <INSERT THRESHOLD> games to be played.
-5. Allows captains to pick <INSERT QUEUE SIZE> amount of players to teams, either 1 by 1 or 1-2-2-2-2-1 (only tested with 12 players).
+4. Decides 2 random team captains. Captainship requires INSERT THRESHOLD games to be played.
+5. Allows captains to pick INSERT QUEUE SIZE-2 amount of players to teams, either 1 by 1 or 1-2-2-2-2-1 (only tested with 12 players).
 6. Announces teams when all players have been picked.
 
 # Extra features
