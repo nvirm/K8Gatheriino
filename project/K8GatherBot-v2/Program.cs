@@ -205,8 +205,8 @@ Made with love and coffee. More or less the other.
             fi.Add("pickPhase.started", "Readycheck valmis, aloitetaan poimintavaihe! Ensimmäinen poiminta: Team 1 \n - Team 1:n kapteeni:");
             fi.Add("pickPhase.team2Captain", " - Team 2:n kapteeni:");
             fi.Add("pickPhase.instructions", "Poimi pelaajia käyttäen ***!pick NUMERO***");
-            fi.Add("pickPhase.pickmodeinst1", "Poimintavuorot: ***1-2-2-2-2-1***");
-            fi.Add("pickPhase.pickmodeinst2", "Poimintavuorot: ***1-1-1-1-1-1-1-1-1-1***");
+            fi.Add("pickPhase.pickmodeinst1", "Poimintavuorot: ***1-2-...-2-1***");
+            fi.Add("pickPhase.pickmodeinst2", "Poimintavuorot: ***1-1-...-1-1***");
             fi.Add("pickPhase.team2Turn", "Pelaaja lisätty! Poimintavuoro: ");
             fi.Add("pickPhase.team1Turn", "Pelaaja lisätty! Poimintavuoro: ");
             fi.Add("pickPhase.unpicked", "***Poimimatta:***");
