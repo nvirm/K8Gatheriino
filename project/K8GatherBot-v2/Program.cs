@@ -202,8 +202,8 @@ Made with love and coffee. More or less the other.
             fi.Add("queuePhase.notInQueue", "Et ole juuri nyt jonossa");
             fi.Add("queuePhase.notReadyYet", "Jono ei ole vielä valmis!");
             fi.Add("readyPhase.ready", "Valmiina!");
-            fi.Add("pickPhase.started", "Readycheck valmis, aloitetaan poimintavaihe! Ensimmäinen poiminta: Team 1 \n Team 1:n kapteeni:");
-            fi.Add("pickPhase.team2Captain", "Team 2:n kapteeni:");
+            fi.Add("pickPhase.started", "Readycheck valmis, aloitetaan poimintavaihe! Ensimmäinen poiminta: Team 1 \n - Team 1:n kapteeni:");
+            fi.Add("pickPhase.team2Captain", " - Team 2:n kapteeni:");
             fi.Add("pickPhase.instructions", "Poimi pelaajia käyttäen ***!pick NUMERO***");
             fi.Add("pickPhase.pickmodeinst1", "Poimintavuorot: ***1-2-2-2-2-1***");
             fi.Add("pickPhase.pickmodeinst2", "Poimintavuorot: ***1-1-1-1-1-1-1-1-1-1***");
@@ -255,8 +255,8 @@ Made with love and coffee. More or less the other.
             en.Add("queuePhase.notInQueue", "You are not in the queue right now.");
             en.Add("queuePhase.notReadyYet", "Queue is not finished yet!");
             en.Add("readyPhase.ready", "Ready!");
-            en.Add("pickPhase.started", "Readycheck complete, starting picking phase! First picking turn: Team 1 \n Team 1 Captain:");
-            en.Add("pickPhase.team2Captain", "Team 2 Captain:");
+            en.Add("pickPhase.started", "Readycheck complete, starting picking phase! First picking turn: Team 1 \n - Team 1 Captain:");
+            en.Add("pickPhase.team2Captain", " - Team 2 Captain:");
             en.Add("pickPhase.instructions", "Pick players using ***!pick NUMBER***");
             en.Add("pickPhase.pickmodeinst1", "Picking turns: ***1-2-2-2-2-1***");
             en.Add("pickPhase.pickmodeinst2", "Picking turns: ***1-1-1-1-1-1-1-1-1-1***");
