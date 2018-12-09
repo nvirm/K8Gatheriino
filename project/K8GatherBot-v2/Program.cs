@@ -207,8 +207,8 @@ Made with love and coffee. More or less the other.
             fi.Add("pickPhase.instructions", "Poimi pelaajia käyttäen ***!pick NUMERO***");
             fi.Add("pickPhase.pickmodeinst1", "Poimintavuorot: ***1-2-2-2-2-1***");
             fi.Add("pickPhase.pickmodeinst2", "Poimintavuorot: ***1-1-1-1-1-1-1-1-1-1***");
-            fi.Add("pickPhase.team2Turn", "Pelaaja lisätty Team 1:n! Poimintavuoro: ");
-            fi.Add("pickPhase.team1Turn", "Pelaaja lisätty Team 2:n! Poimintavuoro: ");
+            fi.Add("pickPhase.team2Turn", "Pelaaja lisätty! Poimintavuoro: ");
+            fi.Add("pickPhase.team1Turn", "Pelaaja lisätty! Poimintavuoro: ");
             fi.Add("pickPhase.unpicked", "***Poimimatta:***");
             fi.Add("pickPhase.alreadyPicked", "Pelaaja on jo joukkueessa!");
             fi.Add("pickPhase.unknownIndex", "Numerolla ei löytynyt pelaajaa!");
@@ -260,8 +260,8 @@ Made with love and coffee. More or less the other.
             en.Add("pickPhase.instructions", "Pick players using ***!pick NUMBER***");
             en.Add("pickPhase.pickmodeinst1", "Picking turns: ***1-2-2-2-2-1***");
             en.Add("pickPhase.pickmodeinst2", "Picking turns: ***1-1-1-1-1-1-1-1-1-1***");
-            en.Add("pickPhase.team2Turn", "Player added to Team 1! Next pick: ");
-            en.Add("pickPhase.team1Turn", "Player added to Team 2! Next pick: ");
+            en.Add("pickPhase.team2Turn", "Player added! Next pick: ");
+            en.Add("pickPhase.team1Turn", "Player added! Next pick: ");
             en.Add("pickPhase.unpicked", "***Remaining players:***");
             en.Add("pickPhase.alreadyPicked", "That player is already in a team!");
             en.Add("pickPhase.unknownIndex", "Couldn't place a player with that index");
