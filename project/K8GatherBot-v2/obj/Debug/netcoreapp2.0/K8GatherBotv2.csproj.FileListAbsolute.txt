@@ -18,3 +18,15 @@ C:\Users\Niki\Documents\GitHub\K8Gatheriino\project\K8GatherBot-v2\obj\Debug\net
 C:\Users\Niki\Documents\GitHub\K8Gatheriino\project\K8GatherBot-v2\obj\Debug\netcoreapp2.0\K8GatherBotv2.AssemblyInfo.cs
 C:\Users\Niki\Documents\GitHub\K8Gatheriino\project\K8GatherBot-v2\obj\Debug\netcoreapp2.0\K8GatherBotv2.dll
 C:\Users\Niki\Documents\GitHub\K8Gatheriino\project\K8GatherBot-v2\obj\Debug\netcoreapp2.0\K8GatherBotv2.pdb
+D:\GITKRAK\K8Gatheriino\project\K8GatherBot-v2\bin\Debug\netcoreapp2.0\K8GatherBotv2.deps.json
+D:\GITKRAK\K8Gatheriino\project\K8GatherBot-v2\bin\Debug\netcoreapp2.0\K8GatherBotv2.runtimeconfig.json
+D:\GITKRAK\K8Gatheriino\project\K8GatherBot-v2\bin\Debug\netcoreapp2.0\K8GatherBotv2.runtimeconfig.dev.json
+D:\GITKRAK\K8Gatheriino\project\K8GatherBot-v2\bin\Debug\netcoreapp2.0\K8GatherBotv2.dll
+D:\GITKRAK\K8Gatheriino\project\K8GatherBot-v2\bin\Debug\netcoreapp2.0\K8GatherBotv2.pdb
+D:\GITKRAK\K8Gatheriino\project\K8GatherBot-v2\obj\Debug\netcoreapp2.0\K8GatherBotv2.csprojAssemblyReference.cache
+D:\GITKRAK\K8Gatheriino\project\K8GatherBot-v2\obj\Debug\netcoreapp2.0\K8GatherBotv2.AssemblyInfoInputs.cache
+D:\GITKRAK\K8Gatheriino\project\K8GatherBot-v2\obj\Debug\netcoreapp2.0\K8GatherBotv2.AssemblyInfo.cs
+D:\GITKRAK\K8Gatheriino\project\K8GatherBot-v2\obj\Debug\netcoreapp2.0\K8GatherBotv2.csproj.CoreCompileInputs.cache
+D:\GITKRAK\K8Gatheriino\project\K8GatherBot-v2\obj\Debug\netcoreapp2.0\K8GatherBotv2.dll
+D:\GITKRAK\K8Gatheriino\project\K8GatherBot-v2\obj\Debug\netcoreapp2.0\K8GatherBotv2.pdb
+D:\GITKRAK\K8Gatheriino\project\K8GatherBot-v2\obj\Debug\netcoreapp2.0\K8GatherBotv2.genruntimeconfig.cache
