@@ -1283,10 +1283,15 @@ Made with love and coffee. More or less the other.
                     if (!pickSuccessful) return;
 
                     //Pickmode 3 quirk - If 3 players remaining, Override Next picking team to team 2
-                    if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == (ProgHelpers.qcount - 3))
+                    if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == (ProgHelpers.qcount - 2))
                     {
+                        Console.WriteLine("Picked players: " + ProgHelpers.team1ids.Count.ToString() + ProgHelpers.team2ids.Count.ToString() + "/" + ProgHelpers.qcount.ToString() + " -- Override next pick");
                         nextTeam = "team2";
                         ProgHelpers.pickturn = ProgHelpers.captain2id;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Picked players: " + ProgHelpers.team1ids.Count.ToString() + ProgHelpers.team2ids.Count.ToString() + "/" + ProgHelpers.qcount.ToString() + " -- No override.");
                     }
 
                     // automatically pick the fat kid
@@ -1556,6 +1561,7 @@ Made with love and coffee. More or less the other.
                     //2018-10: Type the actual name to log..
                     var txtdraftnames = String.Join(" , ", ProgHelpers.draftchatnames.ToArray());
                     Console.WriteLine("!-- STARTING PICKING PHASE --!");
+                    Console.WriteLine("Pickmode: " + ProgHelpers.pickMode.ToString());
                     Console.WriteLine("Pick phase, Captain Team 1: " + c1n + ", ID " + c1i);                //Team 1 Captain name and id
                     Console.WriteLine("Pick phase, Captain Team 2: " + c2n + ", ID " + c2i);                //Team 2 Captain name
                     Console.WriteLine("Pick phase, available players: " + txtdraftnames);                   //Available players and their pick #
