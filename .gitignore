@@ -4,3 +4,5 @@ project/K8GatherBot-v2/obj/
 project/K8GatherBot-v2/bin/
 
 project/.vs/
+
+.DS_Store

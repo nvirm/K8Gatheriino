@@ -207,6 +207,7 @@ Made with love and coffee. More or less the other.
             fi.Add("pickPhase.instructions", "Poimi pelaajia käyttäen ***!pick NUMERO***");
             fi.Add("pickPhase.pickmodeinst1", "Poimintavuorot: ***1-2-...-2-1***");
             fi.Add("pickPhase.pickmodeinst2", "Poimintavuorot: ***1-1-...-1-1***");
+            fi.Add("pickPhase.pickmodeinst3", "Poimintavuorot: ***1-1-...-2-1***");
             fi.Add("pickPhase.team2Turn", "Pelaaja lisätty! Poimintavuoro: ");
             fi.Add("pickPhase.team1Turn", "Pelaaja lisätty! Poimintavuoro: ");
             fi.Add("pickPhase.unpicked", "***Poimimatta:***");
@@ -260,6 +261,7 @@ Made with love and coffee. More or less the other.
             en.Add("pickPhase.instructions", "Pick players using ***!pick NUMBER***");
             en.Add("pickPhase.pickmodeinst1", "Picking turns: ***1-2-...-2-1***");
             en.Add("pickPhase.pickmodeinst2", "Picking turns: ***1-1-...-1-1***");
+            en.Add("pickPhase.pickmodeinst3", "Picking turns: ***1-1-...-2-1***");
             en.Add("pickPhase.team2Turn", "Player added! Next pick: ");
             en.Add("pickPhase.team1Turn", "Player added! Next pick: ");
             en.Add("pickPhase.unpicked", "***Remaining players:***");
@@ -1038,6 +1040,9 @@ Made with love and coffee. More or less the other.
                 if (ProgHelpers.pickMode == 1)
                 {
                     pickmodeStr = ProgHelpers.locale["pickPhase.pickmodeinst1"];
+                }else if (ProgHelpers.pickMode == 3)
+                {
+                    pickmodeStr = ProgHelpers.locale["pickPhase.pickmodeinst3"];
                 }
                 else
                 {
@@ -1157,7 +1162,7 @@ Made with love and coffee. More or less the other.
                             nextTeam = "team2";
                             pickSuccessful = PickTeamMember(author, message.Content, ProgHelpers.team1ids, ProgHelpers.team1, ProgHelpers.captain2id);
                         }
-                        else 
+                        else
                         {
                             //NORMAL PICK
 
@@ -1238,8 +1243,94 @@ Made with love and coffee. More or less the other.
                     Console.WriteLine("!# Error in CmdPick: " + e.ToString());
                 }
             }
-            else
+            else if (ProgHelpers.pickMode == 3)
             {
+                //2023-01 - Experimental Pickmode 3 (1-1-1-1-1-2-1)
+                try
+                {
+                    DiscordUser author = message.Author;
+                    string messageAuthorId = author.Id.Id.ToString();
+
+                    // verify message sender
+                    if (messageAuthorId != ProgHelpers.pickturn)
+                    {
+                        if (messageAuthorId == ProgHelpers.captain2id || messageAuthorId == ProgHelpers.captain1id)
+                        {
+                            Console.WriteLine("!pick -- Not your turn (" + author.Username + ")");
+                            await http.CreateMessage(message.ChannelId, $"<@{author.Id}> " + ProgHelpers.locale["pickPhase.notYourTurn"]);
+                        }
+                        else
+                        {
+                            Console.WriteLine("!pick -- Not Captain (" + author.Username + ")");
+                            await http.CreateMessage(message.ChannelId, $"<@{author.Id}> " + ProgHelpers.locale["pickPhase.notCaptain"]);
+                        }
+                        return;
+                    }
+
+                    // execute team pick
+                    string nextTeam = null;
+                    bool pickSuccessful = false;
+                    if (ProgHelpers.pickturn == ProgHelpers.captain1id)
+                    {
+                        nextTeam = "team2";
+                        pickSuccessful = PickTeamMember(author, message.Content, ProgHelpers.team1ids, ProgHelpers.team1, ProgHelpers.captain2id);
+                    }
+                    else
+                    {
+                        nextTeam = "team1";
+                        pickSuccessful = PickTeamMember(author, message.Content, ProgHelpers.team2ids, ProgHelpers.team2, ProgHelpers.captain1id);
+                    }
+                    if (!pickSuccessful) return;
+
+                    //Pickmode 3 quirk - If 3 players remaining, Override Next picking team to team 2
+                    if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == (ProgHelpers.qcount - 3))
+                    {
+                        nextTeam = "team2";
+                        ProgHelpers.pickturn = ProgHelpers.captain2id;
+                    }
+
+                    // automatically pick the fat kid
+                    if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == (ProgHelpers.qcount - 1))
+                    {
+                        if (ProgHelpers.pickturn == ProgHelpers.captain1id)
+                        {
+                            PickFatKid(ProgHelpers.team1ids, ProgHelpers.team1);
+                        }
+                        else
+                        {
+                            PickFatKid(ProgHelpers.team2ids, ProgHelpers.team2);
+                        }
+                    }
+                    else
+                    {
+                        await http.CreateMessage(message.ChannelId, $"<@{author.Id}> " + ProgHelpers.locale["pickPhase." + nextTeam + "Turn"] + " <@" + ProgHelpers.pickturn + "> \n " + ProgHelpers.locale["pickPhase.unpicked"] + " \n" + string.Join("\n", ProgHelpers.draftchatnames.Cast<string>().ToArray()));
+                    }
+
+                    // if all players have been picked show the teams and reset bot status
+                    if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == ProgHelpers.qcount)
+                    {
+
+                        ProgHelpers.persistedData.AddHighScores(ProgHelpers.team1ids.Concat(ProgHelpers.team2ids).ToList(), ProgHelpers.team1.Concat(ProgHelpers.team2).ToList());
+                        await http.CreateMessage(ProgHelpers.channelsnowflake, new CreateMessageOptions()
+                         .SetEmbed(new EmbedOptions()
+                         .SetTitle($"kitsun8's Gatheriino, " + ProgHelpers.locale["status.pickedTeams"])
+                         .SetFooter("K8Gatheriino, " + ProgHelpers.txtversion)
+                         .SetColor(DiscordColor.FromHexadecimal(0xff9933))
+                         .AddField("Team1: ", string.Join("\n", ProgHelpers.team1.Cast<string>().ToArray()), true)
+                         .AddField("Team2: ", string.Join("\n", ProgHelpers.team2.Cast<string>().ToArray()), true)
+                          ));
+
+                        //clear other lists as well, resetting bot to default values, ready for another round!
+                        ResetQueue();
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("!# Error in CmdPick: " + e.ToString());
+                }
+            }
+            else {
                 // ORIGINAL PICKPHASE MODE
                 try
                 {
