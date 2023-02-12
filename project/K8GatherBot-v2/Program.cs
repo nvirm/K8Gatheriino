@@ -567,7 +567,7 @@ Made with love and coffee. More or less the other.
                     await CmdThinKid(shard, message);
                     break;
                 case "!firstpick10":
-                case "!fist10":
+                case "!first10":
                     await CmdThinTopTen(shard, message);
                     break;
                 case "!captain":
