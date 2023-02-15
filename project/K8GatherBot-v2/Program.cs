@@ -449,6 +449,10 @@ Made with love and coffee. More or less the other.
                 ProgHelpers._cptPickcounter++;
                 return;
             }
+            // Reset timer
+            _tm2.Dispose();
+            ProgHelpers._cptPickcounter = 0;
+
             //Timer is up
             Program rdyprog = new Program();
             rdyprog.CmdPick(null, null, true);
@@ -1099,17 +1103,37 @@ Made with love and coffee. More or less the other.
 
         private bool PickTeamMemberAuto(List<string> teamIds, List<string> team, string nextCaptain)
         {
+            Console.WriteLine("AutoPicking for team");
             int selectedIndex = 0;
             var selectedPlayerId = "";
             var selectedPlayerName = "";
 
-            //Try randoming
-            var random = new Random();
-            int rindex = random.Next(ProgHelpers.queueids.Count);
-            selectedIndex = rindex;
+            bool validCandidate = false;
 
-            selectedPlayerId = ProgHelpers.queueids.ElementAtOrDefault(selectedIndex);
-            selectedPlayerName = ProgHelpers.queue.ElementAtOrDefault(selectedIndex);
+            //Quick and dirty while loop - keep randoming until no matches are found
+            do
+            {
+                //Try randoming
+                var random = new Random();
+                int rindex = random.Next(0, ProgHelpers.queueids.Count - 1);
+                Console.WriteLine("Trying to random - Random index value: " + rindex);
+                selectedIndex = rindex;
+
+                selectedPlayerId = ProgHelpers.queueids.ElementAtOrDefault(selectedIndex);
+                selectedPlayerName = ProgHelpers.queue.ElementAtOrDefault(selectedIndex);
+                if (ProgHelpers.team1ids.IndexOf(selectedPlayerId) > -1 || ProgHelpers.team2ids.IndexOf(selectedPlayerId) > -1)
+                {
+                    //Match found
+                    Console.WriteLine("Randomized entry already in team - FAIL.");
+                }
+                else
+                {
+                    //No match found - Proceed
+                    Console.WriteLine("No Match found for randomized entry - OK!");
+                    validCandidate = true;
+                }
+            } while (validCandidate == false);
+
 
             teamIds.Add(selectedPlayerId);
             team.Add(selectedPlayerName);
@@ -1132,7 +1156,10 @@ Made with love and coffee. More or less the other.
             // Reset timer and assign new timer
             _tm2.Dispose();
             ProgHelpers._cptPickcounter = 0;
-            StartTimerCptPick();
+            if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == (ProgHelpers.qcount - 1))
+            {
+                StartTimerCptPick();
+            }
 
 
             return true;
@@ -1183,7 +1210,10 @@ Made with love and coffee. More or less the other.
             // Reset timer and assign new timer
             _tm2.Dispose();
             ProgHelpers._cptPickcounter = 0;
-            StartTimerCptPick();
+            if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == (ProgHelpers.qcount - 1))
+            {
+                StartTimerCptPick();
+            }
 
 
             return true;
