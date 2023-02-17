@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
@@ -87,6 +88,8 @@ Made with love and coffee. More or less the other.
             //Technical defaults----------------------------------------------------------------------------------------
             public static int _counter = 0; //Readytimer: Inital Value
             public static int counterlimit = 0; //Readytimer: Max value (Time in seconds after which players who are not ready are removed from queue.)
+            public static int _cptPickcounter = 0; //Picktimer in picking
+            public static int cptPicktimerlimit = 0; //Picktimer Max value (time in seconds after which pick is randomized)
             public static int qcount = 0; //Queuesize: Max players in queue
             public static string userChannel = ""; //Channel: Channel to listen for messages (Discord debug for ID)
             public static string bottoken = ""; //Bot: Bot token for the bot, Discord developer panel https://discordapp.com/developers/applications/me
@@ -142,6 +145,9 @@ Made with love and coffee. More or less the other.
 
                 ProgHelpers.counterlimit = Convert.ToInt32(ProgHelpers.Configuration["Settings:Readytimer"]);
                 Console.WriteLine("Readytimer:" + Convert.ToInt32(ProgHelpers.Configuration["Settings:Readytimer"]));
+
+                ProgHelpers.cptPicktimerlimit = Convert.ToInt32(ProgHelpers.Configuration["Settings:CptPicktimer"]);
+                Console.WriteLine("CptPicktimer: " + Convert.ToInt32(ProgHelpers.Configuration["Settings:CptPicktimer"]));
 
                 ProgHelpers.newKidThreshold = Convert.ToInt32(ProgHelpers.Configuration["Settings:CaptainThreshold"]);
                 Console.WriteLine("CaptainThreshold:" + Convert.ToInt32(ProgHelpers.Configuration["Settings:CaptainThreshold"]));
@@ -245,6 +251,8 @@ Made with love and coffee. More or less the other.
             fi.Add("player.stats", "pelaajan tiedot");
             fi.Add("relinq.pickPhaseStarted", "Olet jo valinnut pelaajan, liian myöhäistä luopua tehtävästä.");
             fi.Add("relinq.successful", "Luovuit kapteeninhommista onnistuneesti, uusi kapteeni on: ");
+            fi.Add("autopick.autoPickTimeLeft", "Aikaa jäljellä automaattiseen valintaan: ");
+            fi.Add("autopick.autoPickTimeLeft2", " sekuntia.");
 
             //English localization
             en.Add("pickPhase.alreadyInProcess", "Please wait until the previous queue is handled.");
@@ -274,7 +282,7 @@ Made with love and coffee. More or less the other.
             en.Add("status.pickedTeams", "Selected teams");
             en.Add("status.queueStatus", "Current queue");
             en.Add("info.purposeAnswer", "Get people to gather and play together");
-            en.Add("info.funFactAnswer", "Only a droplet of coffee was used to develop this bot. :thinking:");
+            en.Add("info.funFactAnswer", "Only a droplet of coffee was used to develop this bot.");
             en.Add("info.developer", "Developer");
             en.Add("info.purpose", "Purpose");
             en.Add("info.funFact", "Fun fact");
@@ -284,14 +292,14 @@ Made with love and coffee. More or less the other.
             en.Add("readyPhase.timeout", "Not all players were ready during the readycheck. Returning to queue with players that were ready.");
             en.Add("readyPhase.cannotAdd", "Wait until the picking phase is over.");
             en.Add("readyPhase.alreadyMarkedReady", "You have already readied!");
-            en.Add("fatKid.header", "Fat Kid");
-            en.Add("fatKid.top10", "Top 10 Fat Kids");
-            en.Add("fatKid.statusSingle", "{0} has been the fat kid {1} times ({2}/{3})");
+            en.Add("fatKid.header", "Last Picked");
+            en.Add("fatKid.top10", "Top 10 Last Pickeds");
+            en.Add("fatKid.statusSingle", "{0} has been the Last Picked {1} times ({2}/{3})");
             en.Add("highScores.header", "Games played");
             en.Add("highScores.top10", "Top 10 Gathering LEGENDS");
             en.Add("highScores.statusSingle", "{0} has played {1} games ({2}/{3})");
-            en.Add("thinKid.header", "Thin kid");
-            en.Add("thinKid.top10", "Top10 Thin Kids");
+            en.Add("thinKid.header", "First Picked");
+            en.Add("thinKid.top10", "Top10 First Pickeds");
             en.Add("thinKid.statusSingle", "{0} has been the thin kid {1} times ({2}/{3}");
             en.Add("captain.header", "Captain");
             en.Add("captain.top10", "Top10 Captains");
@@ -299,6 +307,9 @@ Made with love and coffee. More or less the other.
             en.Add("player.stats", "Player statistics");
             en.Add("relinq.pickPhaseStarted", "You have already picked a player, too late to drop out of picking phase");
             en.Add("relinq.successful", "Captainship relinquished successfully, new captain is: ");
+            en.Add("autopick.autoPickTimeLeft", "Time until automatic pick: ");
+            en.Add("autopick.autoPickTimeLeft2", " seconds.");
+
         }
 
         //RUN PROGRAM----------------------------------------------------------------------------------------
@@ -413,6 +424,8 @@ Made with love and coffee. More or less the other.
         //READYCHECK TIMER----------------------------------------------------------------------------------------
         public static Timer _tm = null;
         public static AutoResetEvent _autoEvent = null;
+        public static Timer _tm2 = null;
+        public static AutoResetEvent _autoEvent2 = null;
 
         public static void StartTimer()
         {
@@ -424,6 +437,46 @@ Made with love and coffee. More or less the other.
             Console.WriteLine("-- #! RDYCHECK ACTIVATED !# --" + DateTime.Now.ToString());
         }
 
+        public static void StartTimerCptPick()
+        {
+            //timer init
+
+            _autoEvent2 = new AutoResetEvent(false);
+            _tm2 = new Timer(Checkpicks, _autoEvent2, 1000, 1000);
+
+            Console.WriteLine("-- #! CPTPICKTIME ACTIVATED !# --" + DateTime.Now.ToString());
+        }
+
+        public static void Checkpicks(Object stateInfo)
+        {
+            if (ProgHelpers._cptPickcounter < ProgHelpers.cptPicktimerlimit)
+            {
+                ProgHelpers._cptPickcounter++;
+                var timeleft = ProgHelpers.cptPicktimerlimit - ProgHelpers._cptPickcounter;
+                //Assuming time at least 60seconds
+                if (timeleft == 30 || timeleft == 20 || timeleft == 10)
+                {
+                    Program warningProg = new Program();
+                    Console.WriteLine(timeleft +" Second Warning for autopick --- " + DateTime.Now.ToString());
+                    warningProg.TimerBasedMsg(ProgHelpers.locale["autopick.autoPickTimeLeft"] + timeleft + ProgHelpers.locale["autopick.autoPickTimeLeft2"]);
+                    
+                }
+                return;
+            }
+            Console.WriteLine("-- #! CPTPICKTIME EXPIRED !# --" + DateTime.Now.ToString());
+            // Reset timer
+            _tm2.Dispose();
+            ProgHelpers._cptPickcounter = 0;
+
+            //Timer is up
+            Program rdyprog = new Program();
+            //rdyprog.CmdPick(null, null, true);
+            rdyprog.TestAsync();
+        }
+        public async Task TestAsync()
+        {
+            await CmdPick(null, null, true);
+        }
         public static void Checkrdys(Object stateInfo)
         {
             if (ProgHelpers._counter < ProgHelpers.counterlimit)
@@ -516,11 +569,11 @@ Made with love and coffee. More or less the other.
                 case "!pstats":
                     await CmdPlayerStats(shard, message);
                     break;
-                case "!fatkid":
+                case "!lastpick":
                     await CmdFatKid(shard, message);
                     break;
-                case "!f10":
-                case "!fat10":
+                case "!lastpick10":
+                case "!last10":
                     await CmdFatTopTen(shard, message);
                     break;
                 case "!highscore":
@@ -531,10 +584,11 @@ Made with love and coffee. More or less the other.
                 case "!top10":
                     await CmdTopTen(shard, message);
                     break;
-                case "!thinkid":
+                case "!firstpick":
                     await CmdThinKid(shard, message);
                     break;
-                case "!tk10":
+                case "!firstpick10":
+                case "!first10":
                     await CmdThinTopTen(shard, message);
                     break;
                 case "!captain":
@@ -654,7 +708,7 @@ Made with love and coffee. More or less the other.
                     .AddField(ProgHelpers.locale["info.developer"] + " ", "kitsun8 & pirate_patch", false)
                     .AddField(ProgHelpers.locale["info.purpose"] + " ", ProgHelpers.locale["info.purposeAnswer"], false)
                     .AddField(ProgHelpers.locale["info.funFact"] + " ", ProgHelpers.locale["info.funFactAnswer"], false)
-                    .AddField(ProgHelpers.locale["info.commands"] + " ", "!add, !remove/rm, !ready/r, !pick/p, !ginfo/gi/gatherinfo, !gstatus/gs, !f10/fat10, !fatkid, !top10/topten, !hs/highscore, !tk10, !thinkid, !c10, !captain, !resetbot", false)
+                    .AddField(ProgHelpers.locale["info.commands"] + " ", "!add, !remove/rm, !ready/r, !pick/p, !ginfo/gi/gatherinfo, !gstatus/gs, !lastpick10/last10, !lastpick, !top10/topten, !hs/highscore, !firstpick10/first10, !firstpick, !c10, !captain, !resetbot", false)
                               )
                               );
 
@@ -979,6 +1033,11 @@ Made with love and coffee. More or less the other.
                 http.CreateMessage(ProgHelpers.channelsnowflake, $"<@{authorId}> " + ProgHelpers.locale["relinq.pickPhaseStarted"]);
                 return;
             }
+
+            // Reset timer and assign new timer
+            _tm2.Dispose();
+            ProgHelpers._cptPickcounter = 0;
+
             Random rnd = new Random(); //Random a new captain
             int newCap = rnd.Next(ProgHelpers.queueids.Count); //Rnd index from the current playerpool (-2 of total players)
             string c1n = "";
@@ -1048,6 +1107,8 @@ Made with love and coffee. More or less the other.
                 {
                     pickmodeStr = ProgHelpers.locale["pickPhase.pickmodeinst2"];
                 }
+                //Start new pick timer
+                StartTimerCptPick();
 
                 http.CreateMessage(ProgHelpers.channelsnowflake, ProgHelpers.locale["pickPhase.started"] + " " + "<@" + ProgHelpers.captain1id + ">" + "\n"
                                           + ProgHelpers.locale["pickPhase.team2Captain"] + " " + "<@" + ProgHelpers.captain2id + ">" + "\n" + ProgHelpers.locale["pickPhase.instructions"]+"\n"+ pickmodeStr
@@ -1057,6 +1118,61 @@ Made with love and coffee. More or less the other.
 
         }
 
+        private bool PickTeamMemberAuto(List<string> teamIds, List<string> team, string nextCaptain)
+        {
+            Console.WriteLine("AutoPicking for team");
+            int selectedIndex = 0;
+            var selectedPlayerId = "";
+            var selectedPlayerName = "";
+
+            bool validCandidate = false;
+
+            //Quick and dirty while loop - keep randoming until no matches are found
+            do
+            {
+                //Try randoming
+                var random = new Random();
+                int rindex = random.Next(0, ProgHelpers.queueids.Count - 1);
+                Console.WriteLine("Trying to random - Random index value: " + rindex);
+                selectedIndex = rindex;
+
+                selectedPlayerId = ProgHelpers.queueids.ElementAtOrDefault(selectedIndex);
+                selectedPlayerName = ProgHelpers.queue.ElementAtOrDefault(selectedIndex);
+                if (ProgHelpers.team1ids.IndexOf(selectedPlayerId) > -1 || ProgHelpers.team2ids.IndexOf(selectedPlayerId) > -1)
+                {
+                    //Match found
+                    Console.WriteLine("Randomized entry already in team - FAIL.");
+                }
+                else
+                {
+                    //No match found - Proceed
+                    Console.WriteLine("No Match found for randomized entry - OK!");
+                    validCandidate = true;
+                }
+            } while (validCandidate == false);
+
+
+            teamIds.Add(selectedPlayerId);
+            team.Add(selectedPlayerName);
+
+            int finderremover = ProgHelpers.draftchatids.IndexOf(selectedPlayerId);
+            ProgHelpers.draftchatnames.RemoveAt(finderremover);
+            ProgHelpers.draftchatids.RemoveAt(finderremover);
+
+            Console.WriteLine(ProgHelpers.draftchatnames.Cast<string>().ToArray());
+
+            // add thin kid (the first pick)
+            if (ProgHelpers.team1.Count + ProgHelpers.team2.Count == 3)
+            {
+                ProgHelpers.persistedData.AddThinKid(selectedPlayerId, selectedPlayerName);
+                Console.WriteLine("Thin kid selected (" + selectedPlayerName + ")");
+            }
+
+            ProgHelpers.pickturn = nextCaptain;
+
+
+            return true;
+        }
         private bool PickTeamMember(DiscordUser author, string msg, List<string> teamIds, List<string> team, string nextCaptain)
         {
             string[] msgsp = msg.Split(null);
@@ -1100,6 +1216,7 @@ Made with love and coffee. More or less the other.
 
             ProgHelpers.pickturn = nextCaptain;
 
+
             return true;
         }
 
@@ -1120,12 +1237,62 @@ Made with love and coffee. More or less the other.
             ProgHelpers.draftchatids.Clear();
         }
 
-        private async Task CmdPick(Shard shard, DiscordMessage message)
+        public async Task TimerBasedMsg(string message = "")
         {
+            Console.WriteLine(DateTime.Now + $"-- #! TimerupdateMSG !# --");
+            DiscordHttpClient http2;
+            http2 = new DiscordHttpClient(ProgHelpers.bottoken); //Use BOT token from settings
+            // Create a single shard.
+            using (Shard shard2 = new Shard(ProgHelpers.bottoken, 0, 1))
+            {
+                // Start the shard.
+                await shard2.StartAsync();
+                Console.WriteLine(DateTime.Now + $"-- #! NEW SHARD CREATED !# --");
+
+                // Wait for the shard to end before closing the program.
+                await http2.CreateMessage(ProgHelpers.channelsnowflake, message);
+            
+                Console.WriteLine(DateTime.Now + $"-- #! SHARD ANNOUNCE ATTEMPT !# --");
+                await shard2.StopAsync();
+                Console.WriteLine(DateTime.Now + $"-- #! NEW SHARD STOPPED !# --");
+            }
+        }
+        public async Task TimerBasedMsgEmbedTeamsAndReset()
+        {
+            Console.WriteLine(DateTime.Now + $"-- #! TimerBasedMsgEmbedTeamsAndReset !# --");
+            DiscordHttpClient http2;
+            http2 = new DiscordHttpClient(ProgHelpers.bottoken); //Use BOT token from settings
+            // Create a single shard.
+            using (Shard shard2 = new Shard(ProgHelpers.bottoken, 0, 1))
+            {
+                // Start the shard.
+                await shard2.StartAsync();
+                Console.WriteLine(DateTime.Now + $"-- #! NEW SHARD CREATED !# --");
+
+                // Wait for the shard to end before closing the program.
+                await http2.CreateMessage(ProgHelpers.channelsnowflake, new CreateMessageOptions()
+                 .SetEmbed(new EmbedOptions()
+                 .SetTitle($"kitsun8's Gatheriino, " + ProgHelpers.locale["status.pickedTeams"])
+                 .SetFooter("K8Gatheriino, " + ProgHelpers.txtversion)
+                 .SetColor(DiscordColor.FromHexadecimal(0xff9933))
+                 .AddField("Team1: ", string.Join("\n", ProgHelpers.team1.Cast<string>().ToArray()), true)
+                 .AddField("Team2: ", string.Join("\n", ProgHelpers.team2.Cast<string>().ToArray()), true)
+                  ));
+                Console.WriteLine(DateTime.Now + $"-- #! SHARD ANNOUNCE ATTEMPT !# --");
+                await shard2.StopAsync();
+                Console.WriteLine(DateTime.Now + $"-- #! NEW SHARD STOPPED !# --");
+            }
+            ResetQueue();
+        }
+
+        public async Task CmdPick(Shard shard = null, DiscordMessage message = null, bool overridePick = false)
+        {
+            if (overridePick == true) { goto overrideregion1; }
             if (ProgHelpers.pickMode == 1)
             {
                 try
                 {
+                   
                     DiscordUser author = message.Author;
                     string messageAuthorId = author.Id.Id.ToString();
 
@@ -1148,11 +1315,10 @@ Made with love and coffee. More or less the other.
                     //Execute team pick, declare helpers
                     string nextTeam = null;
                     bool pickSuccessful = false;
-
                     if (ProgHelpers.pickturn == ProgHelpers.captain1id)
                     {
                         //TEAM 1 PICKING PHASE
-
+                        
                         if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == 2)
                         {
                             //FIRSTPICK
@@ -1216,6 +1382,11 @@ Made with love and coffee. More or less the other.
                     }
                     else
                     {
+                        //dispose of the captaintimer
+                        _tm2.Dispose();
+                        ProgHelpers._cptPickcounter = 0;
+                        //Start new pick timer
+                        StartTimerCptPick();
                         await http.CreateMessage(message.ChannelId, $"<@{author.Id}> " + ProgHelpers.locale["pickPhase." + nextTeam + "Turn"] + " <@" + ProgHelpers.pickturn + "> \n " + ProgHelpers.locale["pickPhase.unpicked"] + " \n" + string.Join("\n", ProgHelpers.draftchatnames.Cast<string>().ToArray()));
                     }
 
@@ -1285,13 +1456,13 @@ Made with love and coffee. More or less the other.
                     //Pickmode 3 quirk - If 3 players remaining, Override Next picking team to team 2
                     if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == (ProgHelpers.qcount - 2))
                     {
-                        Console.WriteLine("Picked players: " + ProgHelpers.team1ids.Count.ToString() + ProgHelpers.team2ids.Count.ToString() + "/" + ProgHelpers.qcount.ToString() + " -- Override next pick");
+                        Console.WriteLine("Picked players: " + (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count).ToString() + "/" + ProgHelpers.qcount.ToString() + " -- Override next pick");
                         nextTeam = "team2";
                         ProgHelpers.pickturn = ProgHelpers.captain2id;
                     }
                     else
                     {
-                        Console.WriteLine("Picked players: " + ProgHelpers.team1ids.Count.ToString() + ProgHelpers.team2ids.Count.ToString() + "/" + ProgHelpers.qcount.ToString() + " -- No override.");
+                        Console.WriteLine("Picked players: " + (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count).ToString() + "/" + ProgHelpers.qcount.ToString() + " -- No override.");
                     }
 
                     // automatically pick the fat kid
@@ -1308,6 +1479,11 @@ Made with love and coffee. More or less the other.
                     }
                     else
                     {
+                        //dispose of the captaintimer
+                        _tm2.Dispose();
+                        ProgHelpers._cptPickcounter = 0;
+                        //Start new pick timer
+                        StartTimerCptPick();
                         await http.CreateMessage(message.ChannelId, $"<@{author.Id}> " + ProgHelpers.locale["pickPhase." + nextTeam + "Turn"] + " <@" + ProgHelpers.pickturn + "> \n " + ProgHelpers.locale["pickPhase.unpicked"] + " \n" + string.Join("\n", ProgHelpers.draftchatnames.Cast<string>().ToArray()));
                     }
 
@@ -1387,6 +1563,11 @@ Made with love and coffee. More or less the other.
                     }
                     else
                     {
+                        //dispose of the captaintimer
+                        _tm2.Dispose();
+                        ProgHelpers._cptPickcounter = 0;
+                        //Start new pick timer
+                        StartTimerCptPick();
                         await http.CreateMessage(message.ChannelId, $"<@{author.Id}> " + ProgHelpers.locale["pickPhase." + nextTeam + "Turn"] + " <@" + ProgHelpers.pickturn + "> \n " + ProgHelpers.locale["pickPhase.unpicked"] + " \n" + string.Join("\n", ProgHelpers.draftchatnames.Cast<string>().ToArray()));
                     }
 
@@ -1414,12 +1595,231 @@ Made with love and coffee. More or less the other.
                     Console.WriteLine("!# Error in CmdPick: " + e.ToString());
                 }
             }
+            return; //Return so region code doesn't activate
+
+            //Override pick zone
+            overrideregion1:
+            if (ProgHelpers.pickMode == 1)
+            {
+                try
+                {
+
+                    //Execute team pick, declare helpers
+                    string nextTeam = null;
+                    bool pickSuccessful = false;
+                    if (ProgHelpers.pickturn == ProgHelpers.captain1id)
+                    {
+                        //TEAM 1 PICKING PHASE
+
+                        if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == 2)
+                        {
+                            //FIRSTPICK
+
+                            //Only pick one because it is the first player pick
+                            //Team 1 is always the first picker
+                            nextTeam = "team2";
+                            pickSuccessful = PickTeamMemberAuto(ProgHelpers.team1ids, ProgHelpers.team1, ProgHelpers.captain2id);
+                        }
+                        else
+                        {
+                            //NORMAL PICK
+
+                            //If team has already picked one in the turn, move the next turn, else proceed with current team
+                            if (ProgHelpers.team1ids.Count == ProgHelpers.team2ids.Count)
+                            {
+                                Console.WriteLine("-- !# Team 1 Picked 2/2 of turn --> Next team #! --");
+                                nextTeam = "team2";
+                                pickSuccessful = PickTeamMemberAuto(ProgHelpers.team1ids, ProgHelpers.team1, ProgHelpers.captain2id);
+                            }
+                            else
+                            {
+                                Console.WriteLine("-- !# Team 1 Picked 1/2 of turn --> Same team #! --");
+                                nextTeam = "team1";
+                                pickSuccessful = PickTeamMemberAuto(ProgHelpers.team1ids, ProgHelpers.team1, ProgHelpers.captain1id);
+                            }
+
+                        }
+                    }
+                    else
+                    {
+                        //TEAM 2 PICKING PHASE
+
+                        //If team has already picked one in the turn, move the next turn, else proceed with current team
+                        if (ProgHelpers.team2ids.Count == ProgHelpers.team1ids.Count)
+                        {
+                            Console.WriteLine("-- !# Team 2 Picked 2/2 of turn --> Next team #! --");
+                            nextTeam = "team1";
+                            pickSuccessful = PickTeamMemberAuto(ProgHelpers.team2ids, ProgHelpers.team2, ProgHelpers.captain1id);
+                        }
+                        else
+                        {
+                            Console.WriteLine("-- !# Team 2 Picked 1/2 of turn --> Same team #! --");
+                            nextTeam = "team2";
+                            pickSuccessful = PickTeamMemberAuto(ProgHelpers.team2ids, ProgHelpers.team2, ProgHelpers.captain2id);
+                        }
+                    }
+                    if (!pickSuccessful) return;
+
+                    // automatically pick the fat kid
+                    if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == (ProgHelpers.qcount - 1))
+                    {
+                        if (ProgHelpers.pickturn == ProgHelpers.captain1id)
+                        {
+                            PickFatKid(ProgHelpers.team1ids, ProgHelpers.team1);
+                        }
+                        else
+                        {
+                            PickFatKid(ProgHelpers.team2ids, ProgHelpers.team2);
+                        }
+                    }
+                    else
+                    {
+                        //await http.CreateMessage(message.ChannelId,  ProgHelpers.locale["pickPhase." + nextTeam + "Turn"] + " <@" + ProgHelpers.pickturn + "> \n " + ProgHelpers.locale["pickPhase.unpicked"] + " \n" + string.Join("\n", ProgHelpers.draftchatnames.Cast<string>().ToArray()));
+                        await TimerBasedMsg(ProgHelpers.locale["pickPhase." + nextTeam + "Turn"] + " <@" + ProgHelpers.pickturn + "> \n " + ProgHelpers.locale["pickPhase.unpicked"] + " \n" + string.Join("\n", ProgHelpers.draftchatnames.Cast<string>().ToArray()));
+                        StartTimerCptPick();
+                    }
+
+                    // if all players have been picked show the teams and reset bot status
+                    if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == ProgHelpers.qcount)
+                    {
+
+                        ProgHelpers.persistedData.AddHighScores(ProgHelpers.team1ids.Concat(ProgHelpers.team2ids).ToList(), ProgHelpers.team1.Concat(ProgHelpers.team2).ToList());
+                        await TimerBasedMsgEmbedTeamsAndReset();
+                    }
+                }
+                catch(Exception e)
+                {
+
+                }
+            }
+            else if (ProgHelpers.pickMode == 3)
+            {
+                //2023-01 - Experimental Pickmode 3 (1-1-1-1-1-2-1)
+                try
+                {
+                  
+                    // execute team pick
+                    string nextTeam = null;
+                    bool pickSuccessful = false;
+                    if (ProgHelpers.pickturn == ProgHelpers.captain1id)
+                    {
+                        nextTeam = "team2";
+                        pickSuccessful = PickTeamMemberAuto(ProgHelpers.team1ids, ProgHelpers.team1, ProgHelpers.captain2id);
+                    }
+                    else
+                    {
+                        nextTeam = "team1";
+                        pickSuccessful = PickTeamMemberAuto(ProgHelpers.team2ids, ProgHelpers.team2, ProgHelpers.captain1id);
+                    }
+                    if (!pickSuccessful) return;
+
+                    //Pickmode 3 quirk - If 3 players remaining, Override Next picking team to team 2
+                    if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == (ProgHelpers.qcount - 2))
+                    {
+                        Console.WriteLine("Picked players: " + (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count).ToString() + "/" + ProgHelpers.qcount.ToString() + " -- Override next pick");
+                        nextTeam = "team2";
+                        ProgHelpers.pickturn = ProgHelpers.captain2id;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Picked players: " + (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count).ToString() + "/" + ProgHelpers.qcount.ToString() + " -- No override.");
+                    }
+
+                    // automatically pick the fat kid
+                    if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == (ProgHelpers.qcount - 1))
+                    {
+                        if (ProgHelpers.pickturn == ProgHelpers.captain1id)
+                        {
+                            PickFatKid(ProgHelpers.team1ids, ProgHelpers.team1);
+                        }
+                        else
+                        {
+                            PickFatKid(ProgHelpers.team2ids, ProgHelpers.team2);
+                        }
+                    }
+                    else
+                    {
+                        StartTimerCptPick();
+                        //await http.CreateMessage(message.ChannelId, ProgHelpers.locale["pickPhase." + nextTeam + "Turn"] + " <@" + ProgHelpers.pickturn + "> \n " + ProgHelpers.locale["pickPhase.unpicked"] + " \n" + string.Join("\n", ProgHelpers.draftchatnames.Cast<string>().ToArray()));
+                        await TimerBasedMsg(ProgHelpers.locale["pickPhase." + nextTeam + "Turn"] + " <@" + ProgHelpers.pickturn + "> \n " + ProgHelpers.locale["pickPhase.unpicked"] + " \n" + string.Join("\n", ProgHelpers.draftchatnames.Cast<string>().ToArray()));
+
+                    }
+
+                    // if all players have been picked show the teams and reset bot status
+                    if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == ProgHelpers.qcount)
+                    {
+
+                        ProgHelpers.persistedData.AddHighScores(ProgHelpers.team1ids.Concat(ProgHelpers.team2ids).ToList(), ProgHelpers.team1.Concat(ProgHelpers.team2).ToList());
+                        await TimerBasedMsgEmbedTeamsAndReset();
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("!# Error in CmdPick: " + e.ToString());
+                }
+            }
+            else
+            {
+                // ORIGINAL PICKPHASE MODE
+                try
+                {
+                    // execute team pick
+                    string nextTeam = null;
+                    bool pickSuccessful = false;
+                    if (ProgHelpers.pickturn == ProgHelpers.captain1id)
+                    {
+                        nextTeam = "team2";
+                        pickSuccessful = PickTeamMemberAuto(ProgHelpers.team1ids, ProgHelpers.team1, ProgHelpers.captain2id);
+                    }
+                    else
+                    {
+                        nextTeam = "team1";
+                        pickSuccessful = PickTeamMemberAuto(ProgHelpers.team2ids, ProgHelpers.team2, ProgHelpers.captain1id);
+                    }
+                    if (!pickSuccessful) return;
+
+                    // automatically pick the fat kid
+                    if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == (ProgHelpers.qcount - 1))
+                    {
+                        if (ProgHelpers.pickturn == ProgHelpers.captain1id)
+                        {
+                            PickFatKid(ProgHelpers.team1ids, ProgHelpers.team1);
+                        }
+                        else
+                        {
+                            PickFatKid(ProgHelpers.team2ids, ProgHelpers.team2);
+                        }
+                    }
+                    else
+                    {
+                        StartTimerCptPick();
+
+                        //await http.CreateMessage(message.ChannelId, ProgHelpers.locale["pickPhase." + nextTeam + "Turn"] + " <@" + ProgHelpers.pickturn + "> \n " + ProgHelpers.locale["pickPhase.unpicked"] + " \n" + string.Join("\n", ProgHelpers.draftchatnames.Cast<string>().ToArray()));
+                        await TimerBasedMsg(ProgHelpers.locale["pickPhase." + nextTeam + "Turn"] + " <@" + ProgHelpers.pickturn + "> \n " + ProgHelpers.locale["pickPhase.unpicked"] + " \n" + string.Join("\n", ProgHelpers.draftchatnames.Cast<string>().ToArray()));
+                    }
+
+                    // if all players have been picked show the teams and reset bot status
+                    if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == ProgHelpers.qcount)
+                    {
+
+                        ProgHelpers.persistedData.AddHighScores(ProgHelpers.team1ids.Concat(ProgHelpers.team2ids).ToList(), ProgHelpers.team1.Concat(ProgHelpers.team2).ToList());
+                        await TimerBasedMsgEmbedTeamsAndReset();
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("!# Error in CmdPick: " + e.ToString());
+                }
+            }
 
         }
 
 
         private static void ResetQueue()
         {
+            Console.WriteLine("---RESETQUEUE CALLED---");
             ProgHelpers.team1.Clear();
             ProgHelpers.team1ids.Clear();
             ProgHelpers.team2.Clear();
@@ -1435,6 +1835,12 @@ Made with love and coffee. More or less the other.
             ProgHelpers.queueids.Clear();
             ProgHelpers.readycheckids.Clear();
             ProgHelpers.readycheck.Clear();
+            //dispose of the currenttimer
+            _tm.Dispose();
+            ProgHelpers._counter = 0;
+            //dispose of the captaintimer
+            _tm2.Dispose();
+            ProgHelpers._cptPickcounter = 0;
         }
 
         private async Task CmdReady(Shard shard, DiscordMessage message)
@@ -1567,6 +1973,7 @@ Made with love and coffee. More or less the other.
                     Console.WriteLine("Pick phase, available players: " + txtdraftnames);                   //Available players and their pick #
 
                     ProgHelpers.pickturn = ProgHelpers.captain1id; //initial pickturn
+                    StartTimerCptPick(); //Start the clock
 
 
                     List<string> phlist = new List<string>();
@@ -1680,7 +2087,7 @@ Made with love and coffee. More or less the other.
                 ProgHelpers.queueids.Add(authorId);
                 ProgHelpers.queue.Add(authorUserName);
                 http.CreateMessage(message.ChannelId, $"<@!{message.Author.Id}> " + ProgHelpers.locale["queuePhase.added"] + " " + ProgHelpers.queue.Count.ToString() + "/" + ProgHelpers.qcount.ToString());
-                Console.WriteLine("!add - " + ProgHelpers.queue.Count.ToString() + "/" + ProgHelpers.qcount.ToString());
+                Console.WriteLine("!add - " + ProgHelpers.queue.Count.ToString() + "/" + ProgHelpers.qcount.ToString() + " --- " + DateTime.Now.ToString());
 
 
                 //check if queue is full
@@ -1694,13 +2101,14 @@ Made with love and coffee. More or less the other.
                     //if queue complete, announce readychecks
                     http.CreateMessage(message.ChannelId, ProgHelpers.locale["readyPhase.started"] + " \n" + string.Join("\t", phlist.Cast<string>().ToArray()));
                     StartTimer();
+                    
                 }
             }
             else
             {
                 //Player is already in queue
                 http.CreateMessage(message.ChannelId, $"<@{message.Author.Id}> " + ProgHelpers.locale["queuePhase.alreadyInQueue"] + " " + ProgHelpers.queue.Count.ToString() + "/" + ProgHelpers.qcount.ToString());
-                Console.WriteLine("!add - " + ProgHelpers.queue.Count.ToString() + "/" + ProgHelpers.qcount.ToString() + " --- " + DateTime.Now);
+                Console.WriteLine("!add - " + ProgHelpers.queue.Count.ToString() + "/" + ProgHelpers.qcount.ToString() + " --- " + DateTime.Now.ToString());
             }
 
         }
