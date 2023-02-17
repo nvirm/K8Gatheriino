@@ -1382,6 +1382,9 @@ Made with love and coffee. More or less the other.
                     }
                     else
                     {
+                        //dispose of the captaintimer
+                        _tm2.Dispose();
+                        ProgHelpers._cptPickcounter = 0;
                         //Start new pick timer
                         StartTimerCptPick();
                         await http.CreateMessage(message.ChannelId, $"<@{author.Id}> " + ProgHelpers.locale["pickPhase." + nextTeam + "Turn"] + " <@" + ProgHelpers.pickturn + "> \n " + ProgHelpers.locale["pickPhase.unpicked"] + " \n" + string.Join("\n", ProgHelpers.draftchatnames.Cast<string>().ToArray()));
@@ -1453,13 +1456,13 @@ Made with love and coffee. More or less the other.
                     //Pickmode 3 quirk - If 3 players remaining, Override Next picking team to team 2
                     if (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count == (ProgHelpers.qcount - 2))
                     {
-                        Console.WriteLine("Picked players: " + ProgHelpers.team1ids.Count.ToString() + ProgHelpers.team2ids.Count.ToString() + "/" + ProgHelpers.qcount.ToString() + " -- Override next pick");
+                        Console.WriteLine("Picked players: " + (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count).ToString() + "/" + ProgHelpers.qcount.ToString() + " -- Override next pick");
                         nextTeam = "team2";
                         ProgHelpers.pickturn = ProgHelpers.captain2id;
                     }
                     else
                     {
-                        Console.WriteLine("Picked players: " + ProgHelpers.team1ids.Count.ToString() + ProgHelpers.team2ids.Count.ToString() + "/" + ProgHelpers.qcount.ToString() + " -- No override.");
+                        Console.WriteLine("Picked players: " + (ProgHelpers.team1ids.Count + ProgHelpers.team2ids.Count).ToString() + "/" + ProgHelpers.qcount.ToString() + " -- No override.");
                     }
 
                     // automatically pick the fat kid
@@ -1476,6 +1479,9 @@ Made with love and coffee. More or less the other.
                     }
                     else
                     {
+                        //dispose of the captaintimer
+                        _tm2.Dispose();
+                        ProgHelpers._cptPickcounter = 0;
                         //Start new pick timer
                         StartTimerCptPick();
                         await http.CreateMessage(message.ChannelId, $"<@{author.Id}> " + ProgHelpers.locale["pickPhase." + nextTeam + "Turn"] + " <@" + ProgHelpers.pickturn + "> \n " + ProgHelpers.locale["pickPhase.unpicked"] + " \n" + string.Join("\n", ProgHelpers.draftchatnames.Cast<string>().ToArray()));
@@ -1557,6 +1563,9 @@ Made with love and coffee. More or less the other.
                     }
                     else
                     {
+                        //dispose of the captaintimer
+                        _tm2.Dispose();
+                        ProgHelpers._cptPickcounter = 0;
                         //Start new pick timer
                         StartTimerCptPick();
                         await http.CreateMessage(message.ChannelId, $"<@{author.Id}> " + ProgHelpers.locale["pickPhase." + nextTeam + "Turn"] + " <@" + ProgHelpers.pickturn + "> \n " + ProgHelpers.locale["pickPhase.unpicked"] + " \n" + string.Join("\n", ProgHelpers.draftchatnames.Cast<string>().ToArray()));
@@ -1586,6 +1595,7 @@ Made with love and coffee. More or less the other.
                     Console.WriteLine("!# Error in CmdPick: " + e.ToString());
                 }
             }
+            return; //Return so region code doesn't activate
 
             //Override pick zone
             overrideregion1:
