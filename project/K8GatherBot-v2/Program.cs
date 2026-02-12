@@ -324,7 +324,7 @@ Made with love and coffee. More or less the other.
             using (Shard shard = new Shard(ProgHelpers.bottoken, 0, 1))
             {
                 // Subscribe to the message creation event.
-                shard.Gateway.OnMessageCreated += Gateway_OnMessageCreated;
+                shard.Gateway.OnMessageCreated += async (_, e) => await HandleMessageCreated(e.Shard, e.Message);
                
                 //2018-04: Shard Connected (Debug reasons)
                 shard.OnConnected += Shard_OnConnected;
@@ -513,12 +513,8 @@ Made with love and coffee. More or less the other.
         }
 
         //PARSE GATEWAY MESSAGES----------------------------------------------------------------------------------------
-        private async void Gateway_OnMessageCreated(object sender, MessageEventArgs e)
+        private async Task HandleMessageCreated(Shard shard, DiscordMessage message)
         {
-            Shard shard = e.Shard;
-            DiscordMessage message = e.Message;
-
-
             if (message.Author.Id == shard.UserId)
             {
                 return; //Disregard Bot's own messages
@@ -1687,7 +1683,7 @@ Made with love and coffee. More or less the other.
                         await TimerBasedMsgEmbedTeamsAndReset();
                     }
                 }
-                catch(Exception e)
+                catch (Exception)
                 {
 
                 }

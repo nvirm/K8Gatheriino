@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
-using System.Text;
 using CsvHelper;
+using CsvHelper.Configuration;
 
 namespace K8GatherBotv2
 {
@@ -39,8 +40,11 @@ namespace K8GatherBotv2
             }
             using (TextReader fileReader = File.OpenText(@fileName))
             {
-                CsvReader csvFile = new CsvReader(fileReader);
-                csvFile.Configuration.HasHeaderRecord = false;
+                var readConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
+                {
+                    HasHeaderRecord = false
+                };
+                CsvReader csvFile = new CsvReader(fileReader, readConfig);
                 csvFile.Read();
                 var records = csvFile.GetRecords<UserData>();
                 foreach (UserData pair in records)
@@ -54,8 +58,8 @@ namespace K8GatherBotv2
         {
             using (TextWriter writer = new StreamWriter(File.Open(@fileName, FileMode.Create)))
             {
-                var csv = new CsvWriter(writer);
-                csv.Configuration.Encoding = Encoding.UTF8;
+                var writeConfig = new CsvConfiguration(CultureInfo.InvariantCulture);
+                var csv = new CsvWriter(writer, writeConfig);
                 data.Sort();
                 csv.WriteRecords(data);
                 writer.Flush();
